@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学基礎講座：平方根と三角比完全版</title>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+    window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+    };
+</script>
+
+<style>
+    :root {
+        --bg-color: #121212;
+        --text-color: #ffffff;
+        --accent-primary: #00d2ff; /* Cyber Blue */
+        --accent-secondary: #ff007a; /* Neon Pink */
+        --accent-tertiary: #00ff9d; /* Neon Green */
+        --panel-bg: #1e1e1e;
+        --slide-padding: 30px;
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Presentation Container */
+    #deck {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        perspective: 1000px;
+    }
+
+    .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: var(--slide-padding);
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        
+        opacity: 0;
+        pointer-events: none;
+        transform: translate3d(50px, 0, 0);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        z-index: 0;
+        overflow-y: auto; 
+    }
+
+    .slide::-webkit-scrollbar { width: 8px; }
+    .slide::-webkit-scrollbar-track { background: transparent; }
+    .slide::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+    .slide.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate3d(0, 0, 0);
+        z-index: 10;
+    }
+
+    .slide.past {
+        opacity: 0;
+        transform: translate3d(-50px, 0, 0);
+    }
+
+    /* Typography */
+    h1 { font-size: 3.5rem; margin: 0 0 20px 0; color: var(--accent-primary); text-align: center; line-height: 1.1; text-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
+    h2 { font-size: 2.5rem; margin-bottom: 20px; border-bottom: 3px solid var(--accent-primary); color: #fff; display: inline-block; padding-bottom: 5px; text-align: center;}
+    h3 { font-size: 1.8rem; color: var(--accent-tertiary); margin: 15px 0; }
+    p, li { font-size: 1.6rem; line-height: 1.5; margin-bottom: 0.8rem; max-width: 95%; }
+    
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { position: relative; padding-left: 1.2em; margin-bottom: 0.5em; }
+    li::before { content: "➤"; position: absolute; left: 0; color: var(--accent-primary); font-size: 0.8em; top: 0.2em; }
+
+    .highlight { color: var(--accent-secondary); font-weight: bold; }
+    .important { color: var(--accent-tertiary); font-weight: bold; border-bottom: 2px solid var(--accent-tertiary); }
+    
+    /* Box Styles */
+    .box {
+        background: var(--panel-bg);
+        border: 1px solid #444;
+        border-radius: 15px;
+        padding: 20px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        margin: 15px 0;
+        text-align: center;
+        width: fit-content;
+        min-width: 300px;
+        max-width: 90%;
+    }
+
+    /* Fragment Animation */
+    .fragment {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease-out;
+    }
+    .fragment.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Interactive Elements & SVG */
+    .interactive-area {
+        background: #000;
+        border: 2px solid #333;
+        border-radius: 20px;
+        padding: 20px;
+        margin-top: 10px;
+        text-align: center;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    svg { 
+        overflow: visible; 
+        width: 100%; 
+        height: auto;
+        max-height: 50vh;
+        display: block;
+        margin: 0 auto;
+    }
+
+    input[type=range] { width: 80%; max-width: 400px; transform: scale(1.2); margin: 20px 0; cursor: pointer; accent-color: var(--accent-primary); }
+
+    /* Controls */
+    #controls {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 100;
+    }
+    .btn {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: background 0.2s;
+        backdrop-filter: blur(5px);
+    }
+    .btn:hover { background: var(--accent-primary); color: #000; }
+
+    #progress-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        height: 5px;
+        background: var(--accent-primary);
+        width: 0%;
+        transition: width 0.3s;
+        z-index: 100;
+    }
+
+    .row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; width: 100%; }
+    .col { flex: 1; min-width: 250px; }
+    
+    .svg-text { font-family: sans-serif; fill: white; font-size: 20px; }
+    .svg-label { font-weight: bold; font-size: 22px; }
+    .val-label { font-size: 24px; font-weight: bold; fill: var(--accent-tertiary); }
+
+    /* Table Styles */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.5rem; }
+    th, td { border: 1px solid #444; padding: 10px; text-align: center; }
+    th { background: #333; color: var(--accent-primary); }
+    td { background: rgba(255,255,255,0.05); }
+
+    /* Quiz Styles */
+    .quiz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 900px; }
+    .quiz-item { background: #222; padding: 15px; border-radius: 10px; border: 1px solid #444; cursor: pointer; transition: 0.3s; }
+    .quiz-item:hover { background: #333; border-color: var(--accent-primary); }
+    .quiz-q { font-weight: bold; margin-bottom: 10px; }
+    .quiz-a { display: none; color: var(--accent-tertiary); margin-top: 10px; border-top: 1px solid #555; padding-top: 5px;}
+    .quiz-item.revealed .quiz-a { display: block; }
+
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+    <div class="slide active">
+        <h1>数学基礎講座</h1>
+        <p style="font-size: 1.5rem; letter-spacing: 0.2em; color: #888;">HIGH SCHOOL MATH RESTART</p>
+        <div class="box" style="margin-top: 40px;">
+            <p style="margin:0.5em 0;">1時間目：平方根 $\sqrt{a}$</p>
+            <p style="margin:0.5em 0;">2時間目：三角比 $\sin, \cos, \tan$</p>
+        </div>
+        <p style="font-size: 1rem; margin-top: 40px; opacity: 0.6;">キーボードの [→] または画面右下のボタンで進んでください</p>
+    </div>
+
+    <div class="slide">
+        <h2>この授業のゴール</h2>
+        <ul>
+            <li class="fragment">「計算方法」の暗記をやめる。</li>
+            <li class="fragment"><span class="highlight">「なぜその記号が必要か」</span>という歴史を知る。</li>
+            <li class="fragment"><span class="important">「理性で納得する」</span>体験をする。</li>
+        </ul>
+    </div>
+
+    <div class="slide">
+        <h1 style="color: var(--accent-tertiary);">Part 1<br>平方根（ルート）</h1>
+        <p>無限に続く数を閉じ込める技術</p>
+    </div>
+
+    <div class="slide">
+        <h2>小学校の復習：正方形の面積</h2>
+        <p>「1辺の長さ」から「面積」を求めるのは簡単でした。</p>
+        <div class="row">
+            <div class="box fragment col">
+                <h3>辺の長さ 3</h3>
+                <svg viewBox="0 0 100 100" width="100" height="100" style="margin: 10px auto; background:rgba(255,255,255,0.1);">
+                    <text x="50" y="55" fill="white" text-anchor="middle" dominant-baseline="middle" font-size="20">?</text>
+                </svg>
+                <p>面積 = $3 \times 3 = 9$</p>
+            </div>
+            <div class="box fragment col">
+                <h3>辺の長さ 5</h3>
+                <svg viewBox="0 0 150 150" width="120" height="120" style="margin: 10px auto; background:rgba(255,255,255,0.1);">
+                    <text x="75" y="80" fill="white" text-anchor="middle" dominant-baseline="middle" font-size="20">?</text>
+                </svg>
+                <p>面積 = $5 \times 5 = 25$</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>逆の問題：面積から辺を求める</h2>
+        <p>では、逆に「面積」がわかっているとき、「辺の長さ」はどうなるでしょう？</p>
+        <div class="row">
+            <div class="box fragment col">
+                <h3>面積 9</h3>
+                <p>何回掛けたら9？<br>$\to$ <strong>3</strong></p>
+            </div>
+            <div class="box fragment col">
+                <h3>面積 2</h3>
+                <p>何回掛けたら2？<br>$\to$ <span class="highlight">？？？</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>計算してみよう</h2>
+        <ul>
+            <li class="fragment">$1 \times 1 = 1$ （小さい）</li>
+            <li class="fragment">$2 \times 2 = 4$ （大きい）</li>
+            <li class="fragment">$1.4 \times 1.4 = 1.96$ （惜しい！）</li>
+            <li class="fragment">$1.41421356...$</li>
+        </ul>
+        <p class="fragment highlight" style="margin-top:20px;">永遠に続いて書ききれない！</p>
+    </div>
+
+    <div class="slide">
+        <h2>発明：記号で封印する</h2>
+        <p>「数字で書けないなら、<span class="important">新しい記号</span>を作ってしまえばいい」</p>
+        <div class="box fragment">
+            <p style="font-size: 4rem; margin: 0;">$\sqrt{2}$</p>
+        </div>
+        <p class="fragment">意味：<strong>「2乗すれば2になれるポテンシャルを持つ数」</strong></p>
+    </div>
+
+    <div class="slide">
+        <h2>【実験】面積と1辺の関係</h2>
+        <p>スライダーを動かして面積を変えてみましょう。</p>
+        <div class="interactive-area">
+            <svg id="svg-root" width="300" height="240" viewBox="0 0 300 240">
+                <rect id="rect-root" x="50" y="20" width="200" height="200" fill="rgba(0, 210, 255, 0.2)" stroke="var(--accent-primary)" stroke-width="4"/>
+                <text id="text-area" x="150" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="28" style="pointer-events: none;">Area: 100</text>
+                <text id="text-side" x="150" y="-10" text-anchor="middle" fill="var(--accent-primary)" font-size="24">Side: 10</text>
+            </svg>
+            <input type="range" id="input-area" min="1" max="100" value="100" step="1" oninput="updateRoot()">
+            <p style="margin:0;">面積: <span id="val-area" class="highlight">100</span> $\rightarrow$ 1辺: <span id="val-root" class="important">10.00</span></p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>計算ルール①：掛け算</h2>
+        <h3 class="important">掛け算・割り算は「合体」OK</h3>
+        <p class="fragment" style="font-size: 3rem;">$\sqrt{2} \times \sqrt{3} = \sqrt{6}$</p>
+        <p class="fragment">長方形の面積として考えると、矛盾しないからです。</p>
+    </div>
+
+    <div class="slide">
+        <h2>計算ルール②：足し算の罠</h2>
+        <h3 class="highlight">足し算・引き算は「合体」NG！</h3>
+        <div class="box fragment" style="border-color: var(--accent-secondary);">
+            <p style="font-size: 3rem; color: var(--accent-secondary);">$\sqrt{2} + \sqrt{3} \neq \sqrt{5}$</p>
+            <p>（絶対にダメ！）</p>
+        </div>
+        <p class="fragment">$\sqrt{1}+\sqrt{1} \neq \sqrt{2}$ ($2 \neq 1.41$) の矛盾を思い出そう。</p>
+    </div>
+
+    <div class="slide">
+        <h2>ビジュアルで見る変形（簡約化）</h2>
+        <p>「2人揃ったら1人になって外へ脱出」</p>
+        <div class="interactive-area" style="background: transparent; border: none; box-shadow: none; width: 100%;">
+            <svg viewBox="0 0 600 250" style="width: 100%; max-width: 700px; background: #222; border-radius: 15px; border: 1px solid #444;">
+                <rect x="150" y="80" width="350" height="100" rx="10" fill="none" stroke="white" stroke-width="3"/>
+                <text x="150" y="60" fill="white" class="svg-text">√の中身 (例: 12)</text>
+                
+                <circle cx="230" cy="130" r="35" fill="var(--accent-secondary)" opacity="0.4" />
+                <text x="230" y="140" text-anchor="middle" fill="white" class="svg-label" style="font-size: 30px;">2</text>
+                <circle cx="310" cy="130" r="35" fill="var(--accent-secondary)" opacity="0.4" />
+                <text x="310" y="140" text-anchor="middle" fill="white" class="svg-label" style="font-size: 30px;">2</text>
+                <text x="420" y="140" text-anchor="middle" fill="white" class="svg-label" style="font-size: 30px;">3</text>
+                
+                <path d="M 270 100 Q 270 30 100 130" stroke="var(--accent-secondary)" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+                <circle cx="80" cy="130" r="40" fill="var(--accent-primary)" opacity="0.2" />
+                <text x="80" y="140" text-anchor="middle" fill="var(--accent-primary)" class="svg-label" style="font-size: 40px; font-weight: bold;">2</text>
+                
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="var(--accent-secondary)" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+        <p class="fragment" style="margin-top: 10px;">結果： $\sqrt{12} = 2\sqrt{3}$</p>
+    </div>
+
+    <div class="slide">
+        <h2>計算ルール③：有理化（ゆうりか）</h2>
+        <p>数学界のマナー：「分母にルートを残してはいけない」</p>
+        <div class="box fragment">
+            <p>$\frac{1}{\sqrt{2}}$</p>
+            <p style="font-size:1rem; color:#aaa;">「1個のケーキを1.414人で分ける」って想像できますか？<br>分母が半端だと、大きさのイメージが湧きません。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>有理化のテクニック</h2>
+        <p>「分母と同じもの」を上と下に掛けるだけ。</p>
+        <div class="box fragment" style="text-align: left;">
+            <p>$\frac{1}{\sqrt{2}} = \frac{1 \times \sqrt{2}}{\sqrt{2} \times \sqrt{2}}$</p>
+            <p class="fragment">$= \frac{\sqrt{2}}{2}$</p>
+        </div>
+        <p class="fragment">「2人で $\sqrt{2}$ (約1.4) 個分」なら、<br>1人あたり0.7くらいだとすぐに分かります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>【演習】有理化チャレンジ</h2>
+        <div class="quiz-container">
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">1. $\frac{1}{\sqrt{3}}$ を有理化せよ</div>
+                <div class="quiz-a">$\frac{\sqrt{3}}{3}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">2. $\frac{6}{\sqrt{2}}$ を有理化せよ</div>
+                <div class="quiz-a">$\frac{6\sqrt{2}}{2} = 3\sqrt{2}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">3. $\frac{\sqrt{2}}{\sqrt{5}}$ を有理化せよ</div>
+                <div class="quiz-a">$\frac{\sqrt{10}}{5}$</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>有名な平方根と語呂合わせ</h2>
+        <p>おおよその値を知っておくと、買い物の計算などで便利です。</p>
+        <div class="row">
+            <div class="box fragment col">
+                <h3>$\sqrt{2}$</h3>
+                <p class="highlight">1.414</p>
+                <p style="font-size:1rem;">一夜一夜に人見頃<br>（ひとよひとよにひとみごろ）</p>
+            </div>
+            <div class="box fragment col">
+                <h3>$\sqrt{3}$</h3>
+                <p class="highlight">1.732</p>
+                <p style="font-size:1rem;">人並みに奢れや<br>（ひとなみにおごれや）</p>
+            </div>
+            <div class="box fragment col">
+                <h3>$\sqrt{5}$</h3>
+                <p class="highlight">2.236</p>
+                <p style="font-size:1rem;">富士山麓オウム鳴く<br>（ふじさんろくおーむなく）</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>応用：魔法の比率「白銀比」</h2>
+        <p>コピー用紙（A4）を半分に折ってみましょう。</p>
+        <div class="interactive-area">
+            <svg id="svg-paper" viewBox="0 0 400 300" style="height: 200px;">
+                <rect id="paper-rect" x="50" y="20" width="297" height="210" fill="white" stroke="#333" stroke-width="2"/>
+                <line id="fold-line" x1="198.5" y1="20" x2="198.5" y2="230" stroke="#aaa" stroke-dasharray="5" stroke-width="2"/>
+                <text x="200" y="260" fill="white" text-anchor="middle" font-size="18">A4 ($1:\sqrt{2}$)</text>
+            </svg>
+            <input type="range" id="paper-slider" min="0" max="100" value="0" oninput="updatePaper()">
+            <p>スライダーで折る！形が変わらない（相似）のは $1:\sqrt{2}$ だけ。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>応用：カメラのF値（絞り）</h2>
+        <p>F1.4, F2.0, F2.8... この数字、何か気づきませんか？</p>
+        <div class="interactive-area" style="height: auto;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+                <div style="text-align:center;">
+                    <svg width="80" height="80"><circle cx="40" cy="40" r="35" fill="white"/></svg>
+                    <p>F1.4 ($\sqrt{2}$)</p>
+                </div>
+                <div style="text-align:center;">
+                    <svg width="80" height="80"><circle cx="40" cy="40" r="25" fill="white"/></svg>
+                    <p>F2.0 ($\sqrt{4}$)</p>
+                </div>
+                <div style="text-align:center;">
+                    <svg width="80" height="80"><circle cx="40" cy="40" r="17.5" fill="white"/></svg>
+                    <p>F2.8 ($\sqrt{8}$)</p>
+                </div>
+            </div>
+            <p style="font-size:1rem; margin-top:10px;">光を取り込む「面積」を半分にするには、半径を $1/\sqrt{2}$ 倍にする必要があります。<br>カメラマンは毎日ルートの計算をしているのです。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>歴史トリビア：ピタゴラス教団の悲劇</h2>
+        <div class="row">
+            <div class="col fragment">
+                <p>古代ギリシャのピタゴラス教団は「すべての数は整数か分数（比）で表せる」と信じ、それを「世界の調和」として崇めていました。</p>
+            </div>
+            <div class="col fragment">
+                <p>しかし、弟子のヒッパソスが $\sqrt{2}$ (無理数) を発見してしまいます。<br>「分数で表せない数がある！」<br>教団は教義を守るため、彼を海に沈めて処刑したという伝説があります。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>【練習問題】平方根 10本ノック</h2>
+        <p>クリックして答えを確認してください。</p>
+        <div class="quiz-container">
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">1. $\sqrt{36} =$ ?</div>
+                <div class="quiz-a">$6$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">2. $\sqrt{5} \times \sqrt{3} =$ ?</div>
+                <div class="quiz-a">$\sqrt{15}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">3. $\sqrt{8}$ を簡単にせよ</div>
+                <div class="quiz-a">$2\sqrt{2}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">4. $\sqrt{18} + \sqrt{2} =$ ?</div>
+                <div class="quiz-a">$3\sqrt{2} + \sqrt{2} = 4\sqrt{2}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">5. $\sqrt{75}$ を簡単にせよ</div>
+                <div class="quiz-a">$5\sqrt{3}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">6. $(\sqrt{3})^2 =$ ?</div>
+                <div class="quiz-a">$3$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">7. $\sqrt{2} \times \sqrt{8} =$ ?</div>
+                <div class="quiz-a">$\sqrt{16} = 4$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">8. $3\sqrt{5} - 2\sqrt{5} =$ ?</div>
+                <div class="quiz-a">$\sqrt{5}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">9. $\sqrt{12} \times \sqrt{3} =$ ?</div>
+                <div class="quiz-a">$\sqrt{36} = 6$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">10. $\sqrt{20} - \sqrt{45} =$ ?</div>
+                <div class="quiz-a">$2\sqrt{5} - 3\sqrt{5} = -\sqrt{5}$</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h1 style="color: var(--accent-secondary);">Part 2<br>三角比（Sin, Cos, Tan）</h1>
+        <p>測れないものを測る技術</p>
+    </div>
+
+    <div class="slide">
+        <h2>三角比の基本概念</h2>
+        <p>「相似（そうじ）」を使います。</p>
+        <div class="box fragment">
+            <h3 class="important">角度が決まれば、比率は決まる</h3>
+            <p>ピラミッドの高さも、手元の小さな三角形の比率と同じです。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>3つの道具（定義）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none; padding:0;">
+            <svg viewBox="0 0 500 250" style="width: 100%; max-width: 600px;">
+                <path d="M 50 200 L 400 200 L 400 50 Z" stroke="white" stroke-width="4" fill="none"/>
+                <path d="M 120 200 A 70 70 0 0 0 100 160" stroke="#aaa" fill="none" stroke-width="2"/>
+                <text x="130" y="190" fill="white" font-size="24">θ</text>
+                <text x="180" y="100" fill="white" font-size="24">斜辺 (r)</text>
+                <text x="415" y="130" fill="var(--accent-secondary)" font-size="24" style="font-weight:bold;">高さ (y)</text>
+                <text x="225" y="235" fill="var(--accent-primary)" font-size="24" style="font-weight:bold;">底辺 (x)</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>道具1：$\tan$（タンジェント）</h2>
+        <h3 class="important">坂道の「傾き」</h3>
+        <p>$\tan \theta = \frac{\text{高さ}}{\text{底辺}} = \frac{y}{x}$</p>
+        <p class="fragment">応用：道路の勾配標識（10%など）、スキー場の斜度。</p>
+    </div>
+
+    <div class="slide">
+        <h2>道具2：$\sin$（サイン）</h2>
+        <h3 class="important">斜めに対する「高さ」</h3>
+        <p>$\sin \theta = \frac{\text{高さ}}{\text{斜辺}} = \frac{y}{r}$</p>
+        <p class="fragment">応用：GPS（高度計算）、津波の予測、交流電流の波形。</p>
+    </div>
+
+    <div class="slide">
+        <h2>道具3：$\cos$（コサイン）</h2>
+        <h3 class="important">斜めに対する「影（横）」</h3>
+        <p>$\cos \theta = \frac{\text{底辺}}{\text{斜辺}} = \frac{x}{r}$</p>
+        <p class="fragment">応用：力の分解（物理）、3Dゲームの座標計算。</p>
+    </div>
+
+    <div class="slide">
+        <h2>応用：ゲームのキャラクター回転</h2>
+        <p>「30度右を向け」と言われたら、PCはこう計算します。</p>
+        <div class="interactive-area">
+            <svg id="svg-game" viewBox="-100 -100 200 200" style="height: 200px; background: #001;">
+                <line x1="-100" y1="0" x2="100" y2="0" stroke="#333"/>
+                <line x1="0" y1="-100" x2="0" y2="100" stroke="#333"/>
+                <circle cx="0" cy="0" r="80" stroke="#555" fill="none"/>
+                <path id="player-arrow" d="M -10 10 L 0 -20 L 10 10 L 0 0 Z" fill="var(--accent-tertiary)"/>
+                <line id="player-dir" x1="0" y1="0" x2="0" y2="-80" stroke="var(--accent-primary)" stroke-dasharray="2"/>
+                <text id="game-coords" x="0" y="90" fill="white" font-size="14" text-anchor="middle">x:0, y:1</text>
+            </svg>
+            <input type="range" id="game-slider" min="0" max="360" value="0" oninput="updateGame()">
+            <p>角度を変えると、Sin/Cosで新しい座標が決まります。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>応用：ノイズキャンセリング</h2>
+        <p>「逆の波」をぶつけて音を消す魔法。</p>
+        <div class="interactive-area">
+            <svg id="svg-noise" viewBox="0 0 400 150" style="height: 150px; background: #222;">
+                <path id="wave1" stroke="var(--accent-primary)" fill="none" stroke-width="2"/>
+                <path id="wave2" stroke="var(--accent-secondary)" fill="none" stroke-width="2"/>
+                <path id="wave-result" stroke="white" fill="none" stroke-width="4"/>
+            </svg>
+            <input type="range" id="noise-slider" min="0" max="180" value="0" oninput="updateNoise()">
+            <p>スライダーで位相をずらしてください。波が重なると消えます！</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>【実験】動く三角形</h2>
+        <p>角度を変えると、<span style="color:var(--accent-secondary)">高さ($\sin$)</span>と<span style="color:var(--accent-primary)">横幅($\cos$)</span>はどう変わる？</p>
+        <div class="interactive-area">
+            <svg id="svg-trig" width="300" height="240" viewBox="-50 -50 350 300">
+                <line x1="0" y1="200" x2="250" y2="200" stroke="#555" stroke-width="2"/>
+                <line x1="0" y1="200" x2="0" y2="-20" stroke="#555" stroke-width="2"/>
+                <path d="M 200 200 A 200 200 0 0 0 0 0" fill="none" stroke="#333" stroke-dasharray="5"/>
+                
+                <line id="line-hyp" x1="0" y1="200" x2="141" y2="59" stroke="white" stroke-width="3"/>
+                <line id="line-cos" x1="0" y1="200" x2="141" y2="200" stroke="var(--accent-primary)" stroke-width="5"/>
+                <line id="line-sin" x1="141" y1="200" x2="141" y2="59" stroke="var(--accent-secondary)" stroke-width="5"/>
+                <circle id="point-p" cx="141" cy="59" r="8" fill="white"/>
+            </svg>
+            
+            <input type="range" id="input-angle" min="0" max="89" value="45" oninput="updateTrig()">
+            <p style="margin:0;">角度: <span id="val-angle">45</span>°</p>
+            <p style="margin:0;">
+                <span style="color:var(--accent-secondary)">$\sin$: <span id="val-sin">0.707</span></span> / 
+                <span style="color:var(--accent-primary)">$\cos$: <span id="val-cos">0.707</span></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>有名角：5つのパターン</h2>
+        <p>暗記ではなく、「図形」と「極限」をイメージしましょう。</p>
+    </div>
+
+    <div class="slide">
+        <h2>パターン1：45°（正方形半分）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 500 400" style="max-width:500px;">
+                <path d="M 50 350 L 350 350 L 350 50 Z" stroke="white" stroke-width="4" fill="rgba(255,255,255,0.05)"/>
+                <path d="M 100 350 A 50 50 0 0 0 90 310" stroke="#aaa" fill="none" stroke-width="2"/>
+                <text x="110" y="340" class="svg-text">45°</text>
+                <text x="200" y="380" class="val-label" fill="var(--accent-primary)">1</text>
+                <text x="370" y="200" class="val-label" fill="var(--accent-secondary)">1</text>
+                <text x="170" y="180" class="val-label" fill="white">√2</text>
+            </svg>
+        </div>
+        <div class="box fragment">
+            <p>$\sin = 1/\sqrt{2}, \quad \cos = 1/\sqrt{2}, \quad \tan = 1$</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>パターン2：30°（正三角形半分）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 500 300" style="max-width:500px;">
+                <path d="M 50 250 L 310 250 L 310 100 Z" stroke="white" stroke-width="4" fill="rgba(255,255,255,0.05)"/>
+                <path d="M 100 250 A 50 50 0 0 0 95 220" stroke="#aaa" fill="none" stroke-width="2"/>
+                <text x="110" y="240" class="svg-text">30°</text>
+                <text x="180" y="280" class="val-label" fill="var(--accent-primary)">√3</text>
+                <text x="330" y="180" class="val-label" fill="var(--accent-secondary)">1</text>
+                <text x="150" y="160" class="val-label" fill="white">2</text>
+            </svg>
+        </div>
+        <div class="box fragment">
+            <p>$\sin = 1/2, \quad \cos = \sqrt{3}/2, \quad \tan = 1/\sqrt{3}$</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>パターン3：60°（正三角形半分）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 500 400" style="max-width:400px;">
+                <path d="M 100 350 L 250 350 L 250 90 Z" stroke="white" stroke-width="4" fill="rgba(255,255,255,0.05)"/>
+                <path d="M 140 350 A 40 40 0 0 0 120 310" stroke="#aaa" fill="none" stroke-width="2"/>
+                <text x="150" y="330" class="svg-text">60°</text>
+                <text x="175" y="380" class="val-label" fill="var(--accent-primary)">1</text>
+                <text x="270" y="220" class="val-label" fill="var(--accent-secondary)">√3</text>
+                <text x="130" y="200" class="val-label" fill="white">2</text>
+            </svg>
+        </div>
+        <div class="box fragment">
+            <p>$\sin = \sqrt{3}/2, \quad \cos = 1/2, \quad \tan = \sqrt{3}$</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>パターン4：0°（高さゼロ）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 500 200" style="max-width:600px;">
+                <line x1="50" y1="100" x2="450" y2="100" stroke="#555" stroke-width="2"/>
+                <line x1="50" y1="100" x2="350" y2="100" stroke="white" stroke-width="6"/>
+                <circle cx="350" cy="100" r="8" fill="var(--accent-secondary)"/>
+                <text x="360" y="90" fill="var(--accent-secondary)" font-size="24">高さ(y) = 0</text>
+                <text x="200" y="140" fill="white" font-size="24">斜辺(r) = 1</text>
+            </svg>
+        </div>
+        <div class="box fragment">
+            <p>$\sin 0^\circ = 0, \quad \cos 0^\circ = 1, \quad \tan 0^\circ = 0$</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>パターン5：90°（影ゼロ）</h2>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 300 400" style="max-width:300px;">
+                <line x1="150" y1="350" x2="150" y2="50" stroke="#555" stroke-width="2"/>
+                <line x1="150" y1="350" x2="150" y2="50" stroke="white" stroke-width="6"/>
+                <circle cx="150" cy="50" r="8" fill="var(--accent-primary)"/>
+                <text x="170" y="200" fill="var(--accent-secondary)" font-size="24">高さ(y) = 1</text>
+                <text x="20" y="200" fill="white" font-size="24">斜辺(r) = 1</text>
+            </svg>
+        </div>
+        <div class="box fragment">
+            <p>$\sin 90^\circ = 1, \quad \cos 90^\circ = 0, \quad \tan 90^\circ$ なし</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>三角比の値まとめ</h2>
+        <table>
+            <tr>
+                <th>$\theta$</th>
+                <th>$0^\circ$</th>
+                <th>$30^\circ$</th>
+                <th>$45^\circ$</th>
+                <th>$60^\circ$</th>
+                <th>$90^\circ$</th>
+            </tr>
+            <tr>
+                <th style="color:var(--accent-secondary)">$\sin \theta$</th>
+                <td>$0$</td>
+                <td>$1/2$</td>
+                <td>$1/\sqrt{2}$</td>
+                <td>$\sqrt{3}/2$</td>
+                <td>$1$</td>
+            </tr>
+            <tr>
+                <th style="color:var(--accent-primary)">$\cos \theta$</th>
+                <td>$1$</td>
+                <td>$\sqrt{3}/2$</td>
+                <td>$1/\sqrt{2}$</td>
+                <td>$1/2$</td>
+                <td>$0$</td>
+            </tr>
+            <tr>
+                <th style="color:var(--accent-tertiary)">$\tan \theta$</th>
+                <td>$0$</td>
+                <td>$1/\sqrt{3}$</td>
+                <td>$1$</td>
+                <td>$\sqrt{3}$</td>
+                <td>なし</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="slide">
+        <h2>【練習問題】三角比 10本ノック</h2>
+        <p>クリックして答えを確認してください。</p>
+        <div class="quiz-container">
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">1. $\sin 30^\circ =$ ?</div>
+                <div class="quiz-a">$1/2$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">2. $\tan 45^\circ =$ ?</div>
+                <div class="quiz-a">$1$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">3. $\cos 60^\circ =$ ?</div>
+                <div class="quiz-a">$1/2$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">4. $\sin 90^\circ =$ ?</div>
+                <div class="quiz-a">$1$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">5. $\tan 60^\circ =$ ?</div>
+                <div class="quiz-a">$\sqrt{3}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">6. $\cos 30^\circ =$ ?</div>
+                <div class="quiz-a">$\sqrt{3}/2$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">7. $\sin 45^\circ =$ ?</div>
+                <div class="quiz-a">$1/\sqrt{2}$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">8. $\cos 0^\circ =$ ?</div>
+                <div class="quiz-a">$1$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">9. 斜辺10、30°の高さは？</div>
+                <div class="quiz-a">$10 \times \sin30^\circ = 5$</div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">10. $\tan 90^\circ =$ ?</div>
+                <div class="quiz-a">値なし（定義されない）</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h1>まとめ</h1>
+        <ul>
+            <li class="fragment">$\sqrt{a}$ は「ペアで外に出る」記号。</li>
+            <li class="fragment">三角比は「角度ごとの形のデータ」。</li>
+            <li class="fragment">これらは現代科学を支える基礎言語です。</li>
+        </ul>
+        <button class="btn" onclick="goToSlide(0)" style="margin-top: 50px;">最初に戻る</button>
+    </div>
+
+</div>
+
+<div id="controls">
+    <button class="btn" onclick="prevStep()">◀</button>
+    <button class="btn" onclick="nextStep()">▶</button>
+</div>
+<div id="progress-bar"></div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progress-bar');
+    let currentSlide = 0;
+
+    slides.forEach(slide => {
+        slide.dataset.currentFragment = -1;
+        slide.dataset.totalFragments = slide.querySelectorAll('.fragment').length;
+    });
+
+    function updateView() {
+        slides.forEach((slide, index) => {
+            slide.classList.remove('active', 'past');
+            if (index === currentSlide) {
+                slide.classList.add('active');
+            } else if (index < currentSlide) {
+                slide.classList.add('past');
+            }
+        });
+        const progress = ((currentSlide + 1) / slides.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function nextStep() {
+        const slide = slides[currentSlide];
+        const totalFragments = parseInt(slide.dataset.totalFragments);
+        let currentFragment = parseInt(slide.dataset.currentFragment);
+
+        if (currentFragment < totalFragments - 1) {
+            currentFragment++;
+            const fragments = slide.querySelectorAll('.fragment');
+            fragments[currentFragment].classList.add('visible');
+            slide.dataset.currentFragment = currentFragment;
+        } else {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateView();
+            }
+        }
+    }
+
+    function prevStep() {
+        const slide = slides[currentSlide];
+        let currentFragment = parseInt(slide.dataset.currentFragment);
+
+        if (currentFragment >= 0) {
+            const fragments = slide.querySelectorAll('.fragment');
+            fragments[currentFragment].classList.remove('visible');
+            slide.dataset.currentFragment = currentFragment - 1;
+        } else {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateView();
+            }
+        }
+    }
+
+    function goToSlide(index) {
+        slides.forEach(slide => {
+            slide.dataset.currentFragment = -1;
+            slide.querySelectorAll('.fragment').forEach(f => f.classList.remove('visible'));
+        });
+        currentSlide = index;
+        updateView();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') nextStep();
+        if (e.key === 'ArrowLeft') prevStep();
+    });
+
+    // Square Root Viz
+    function updateRoot() {
+        const area = document.getElementById('input-area').value;
+        const side = Math.sqrt(area);
+        document.getElementById('val-area').textContent = area;
+        document.getElementById('val-root').textContent = side.toFixed(2);
+        
+        const rect = document.getElementById('rect-root');
+        const scale = side * 18;
+        const offsetX = (300 - scale) / 2;
+        const offsetY = (240 - scale) / 2 + 10;
+        rect.setAttribute('x', offsetX);
+        rect.setAttribute('y', offsetY);
+        rect.setAttribute('width', scale);
+        rect.setAttribute('height', scale);
+        
+        document.getElementById('text-area').textContent = `Area: ${area}`;
+        document.getElementById('text-area').setAttribute('y', offsetY + scale/2);
+        document.getElementById('text-side').textContent = `Side: ${side.toFixed(2)}`;
+        document.getElementById('text-side').setAttribute('y', offsetY - 10);
+    }
+    updateRoot();
+
+    // Paper Folding Viz
+    function updatePaper() {
+        const percent = document.getElementById('paper-slider').value;
+        // Map 0-100 to rotation or clip
+        // Simple visualization: fold by reducing width visually to half
+        // Start width 297. Target 210 (rotate) or just half width.
+        // Let's visualize folding A4 (297x210) to A5 (210x148.5)
+        const rect = document.getElementById('paper-rect');
+        // A4 ratio 1.414. Folded ratio 1.414.
+        // Let's just animate the width shrinking to half to show "folding"
+        // Initial 297. Final 148.5.
+        const w = 297 - (297 - 148.5) * (percent / 100);
+        rect.setAttribute('width', w);
+    }
+
+    // Game Rotation Viz
+    function updateGame() {
+        const deg = document.getElementById('game-slider').value;
+        const rad = deg * (Math.PI / 180);
+        const arrow = document.getElementById('player-arrow');
+        const dirLine = document.getElementById('player-dir');
+        
+        // Rotate arrow
+        arrow.setAttribute('transform', `rotate(${deg})`);
+        
+        // Calculate coords (Up is 0 deg for games usually, or Right is 0. Let's assume standard Math Right=0, but games often Y-up or Y-down.
+        // Let's stick to math standard: 0 is Right.
+        // But visual shows Up. Let's adjust so 0 is Up.
+        // sin/cos for Up=0: x=sin, y=-cos (screen coords)
+        const x = Math.sin(rad);
+        const y = -Math.cos(rad);
+        
+        dirLine.setAttribute('x2', x * 80);
+        dirLine.setAttribute('y2', y * 80);
+        
+        document.getElementById('game-coords').textContent = `x:${x.toFixed(2)}, y:${(-y).toFixed(2)}`;
+    }
+
+    // Noise Cancelling Viz
+    function updateNoise() {
+        const phase = parseInt(document.getElementById('noise-slider').value);
+        const wave1 = document.getElementById('wave1');
+        const wave2 = document.getElementById('wave2');
+        const result = document.getElementById('wave-result');
+        
+        // Generate path data
+        let d1 = "M 0 75", d2 = "M 0 75", dr = "M 0 75";
+        
+        for(let x=0; x<=400; x+=5) {
+            const rad = x * 0.05;
+            const rad2 = x * 0.05 + (phase * Math.PI / 180);
+            
+            const y1 = Math.sin(rad) * 40;
+            const y2 = Math.sin(rad2) * 40;
+            const yr = y1 + y2;
+            
+            d1 += ` L ${x} ${75 - y1}`;
+            d2 += ` L ${x} ${75 - y2}`;
+            dr += ` L ${x} ${75 - yr}`;
+        }
+        
+        wave1.setAttribute('d', d1);
+        wave2.setAttribute('d', d2);
+        result.setAttribute('d', dr);
+        
+        // Color change if cancelled
+        if(Math.abs(phase - 180) < 10) result.setAttribute('stroke', '#0f0');
+        else result.setAttribute('stroke', 'white');
+    }
+    updateNoise(); // Init
+
+    // Trig Viz
+    function updateTrig() {
+        const deg = document.getElementById('input-angle').value;
+        const rad = deg * (Math.PI / 180);
+        const r = 200; 
+
+        const sin = Math.sin(rad);
+        const cos = Math.cos(rad);
+
+        document.getElementById('val-angle').textContent = deg;
+        document.getElementById('val-sin').textContent = sin.toFixed(3);
+        document.getElementById('val-cos').textContent = cos.toFixed(3);
+
+        const x = cos * r;
+        const y = 200 - (sin * r);
+
+        const lineHyp = document.getElementById('line-hyp');
+        const lineCos = document.getElementById('line-cos');
+        const lineSin = document.getElementById('line-sin');
+        const pointP = document.getElementById('point-p');
+
+        lineHyp.setAttribute('x2', x);
+        lineHyp.setAttribute('y2', y);
+
+        lineCos.setAttribute('x2', x);
+        
+        lineSin.setAttribute('x1', x);
+        lineSin.setAttribute('x2', x);
+        lineSin.setAttribute('y2', y);
+
+        pointP.setAttribute('cx', x);
+        pointP.setAttribute('cy', y);
+    }
+    updateTrig();
+
+</script>
+</body>
+</html>
