@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数学基礎講座：三角比と単位円の完全攻略（改訂版）</title>
+<title>数学基礎講座：三角比と単位円の完全攻略（最終版）</title>
 
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -490,12 +490,9 @@
             <div class="col">
                 <svg viewBox="0 0 240 240" width="240" height="240">
                     <path d="M 20 220 L 220 220 L 220 20 Z" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <rect x="200" y="200" width="20" height="20" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <path d="M 60 220 A 40 40 0 0 0 50 190" stroke="white" fill="none"/>
                     <text x="70" y="210" fill="white" font-size="20">45°</text>
-                    
                     <text x="80" y="110" fill="white" font-size="28" font-weight="bold">√2</text>
                     <text x="120" y="255" class="text-cos" font-size="28" font-weight="bold">1</text>
                     <text x="230" y="130" class="text-sin" font-size="28" font-weight="bold">1</text>
@@ -517,12 +514,9 @@
             <div class="col">
                 <svg viewBox="0 0 240 160" width="240" height="160">
                     <path d="M 20 140 L 220 140 L 220 24 Z" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <rect x="200" y="120" width="20" height="20" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <path d="M 60 140 A 40 40 0 0 0 55 120" stroke="white" fill="none"/>
                     <text x="70" y="130" fill="white" font-size="20">30°</text>
-                    
                     <text x="110" y="70" fill="white" font-size="28" font-weight="bold">2</text>
                     <text x="120" y="175" class="text-cos" font-size="28" font-weight="bold">√3</text>
                     <text x="230" y="90" class="text-sin" font-size="28" font-weight="bold">1</text>
@@ -544,12 +538,9 @@
             <div class="col">
                 <svg viewBox="0 0 160 260" width="160" height="260">
                     <path d="M 20 240 L 140 240 L 140 32 Z" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <rect x="120" y="220" width="20" height="20" stroke="white" stroke-width="2" fill="none"/>
-                    
                     <path d="M 50 240 A 30 30 0 0 0 40 210" stroke="white" fill="none"/>
                     <text x="60" y="230" fill="white" font-size="20">60°</text>
-                    
                     <text x="70" y="130" fill="white" font-size="28" font-weight="bold">2</text>
                     <text x="80" y="275" class="text-cos" font-size="28" font-weight="bold">1</text>
                     <text x="150" y="150" class="text-sin" font-size="28" font-weight="bold">√3</text>
@@ -572,7 +563,6 @@
                 <line x1="20" y1="80" x2="280" y2="80" stroke="#444" stroke-width="2"/>
                 <line x1="20" y1="80" x2="280" y2="80" stroke="white" stroke-width="4" stroke-dasharray="4"/>
                 <line x1="20" y1="80" x2="280" y2="80" stroke="var(--accent-cos)" stroke-width="4" opacity="0.5"/>
-                
                 <circle cx="280" cy="80" r="6" fill="white"/>
                 <text x="150" y="110" class="text-cos" font-size="24">x (cos) = 1</text>
                 <text x="290" y="80" class="text-sin" font-size="24">y (sin) = 0</text>
@@ -593,7 +583,6 @@
                 <line x1="70" y1="260" x2="70" y2="20" stroke="#444" stroke-width="2"/>
                 <line x1="70" y1="260" x2="70" y2="20" stroke="white" stroke-width="4" stroke-dasharray="4"/>
                 <line x1="70" y1="260" x2="70" y2="20" stroke="var(--accent-sin)" stroke-width="4" opacity="0.5"/>
-                
                 <circle cx="70" cy="20" r="6" fill="white"/>
                 <text x="85" y="140" class="text-sin" font-size="24">y (sin) = 1</text>
                 <text x="70" y="290" class="text-cos" font-size="24">x(cos)=0</text>
@@ -899,22 +888,47 @@
     </div>
 
     <div class="slide">
-        <h2>ゲーム応用：キャラクターの軌道</h2>
-        <p>ゲームのキャラが回転したり、敵を追尾するとき、<br>$\cos$ (X座標) と $\sin$ (Y座標) が使われています。</p>
-        <div class="interactive-area">
-            <svg id="svg-game" viewBox="0 0 300 200">
-                <circle cx="150" cy="100" r="5" fill="#555"/>
-                <text x="150" y="120" fill="#888" text-anchor="middle" font-size="12">Center (0,0)</text>
+        <h2>ゲーム応用：宇宙船の周回軌道</h2>
+        <p>宇宙船が惑星の周りを回る座標計算に、三角関数が使われています。</p>
+        <div class="interactive-area" style="background:#000; border: 2px solid #00d2ff; padding:10px;">
+            <svg id="svg-game" viewBox="0 0 400 250">
+                <circle cx="20" cy="30" r="1" fill="#fff" opacity="0.5"/>
+                <circle cx="90" cy="80" r="1.5" fill="#fff" opacity="0.3"/>
+                <circle cx="300" cy="40" r="1" fill="#fff" opacity="0.6"/>
+                <circle cx="350" cy="180" r="1.5" fill="#fff" opacity="0.4"/>
+                <circle cx="150" cy="220" r="1" fill="#fff" opacity="0.5"/>
                 
-                <circle cx="150" cy="100" r="80" stroke="#333" fill="none" stroke-dasharray="4"/>
+                <line x1="200" y1="0" x2="200" y2="250" stroke="#003344" stroke-width="1"/>
+                <line x1="0" y1="125" x2="400" y2="125" stroke="#003344" stroke-width="1"/>
+
+                <defs>
+                    <radialGradient id="planetGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                        <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.8" />
+                        <stop offset="100%" style="stop-color:#003366;stop-opacity:1" />
+                    </radialGradient>
+                </defs>
+                <circle cx="200" cy="125" r="20" fill="url(#planetGrad)" stroke="#00d2ff" stroke-width="2">
+                    <animate attributeName="r" values="20;22;20" dur="3s" repeatCount="indefinite" />
+                </circle>
                 
-                <g id="game-char">
-                    <circle cx="0" cy="0" r="10" fill="var(--accent-history)"/>
-                    <text x="0" y="-15" fill="white" text-anchor="middle" font-size="12">Player</text>
+                <circle cx="200" cy="125" r="100" stroke="#005577" fill="none" stroke-dasharray="5,3"/>
+                
+                <line id="game-proj-x" x1="200" y1="125" x2="200" y2="125" stroke="var(--accent-cos)" stroke-dasharray="4" opacity="0.8"/>
+                <line id="game-proj-y" x1="200" y1="125" x2="200" y2="125" stroke="var(--accent-sin)" stroke-dasharray="4" opacity="0.8"/>
+                
+                <g id="game-char-group">
+                    <g id="game-char-sprite">
+                        <path d="M 0 -15 L 10 10 L 0 5 L -10 10 Z" fill="#fff" stroke="var(--accent-tan)" stroke-width="2"/>
+                        <path d="M -5 10 L 0 18 L 5 10" fill="orange" opacity="0.8"/>
+                    </g>
                 </g>
                 
-                <text x="10" y="20" fill="var(--accent-cos)" font-size="14">x = r × cos(θ)</text>
-                <text x="10" y="40" fill="var(--accent-sin)" font-size="14">y = r × sin(θ)</text>
+                <g transform="translate(10, 20)">
+                    <rect x="0" y="0" width="120" height="60" fill="rgba(0, 20, 40, 0.8)" stroke="#00d2ff" rx="5"/>
+                    <text x="10" y="20" fill="#00d2ff" font-family="monospace" font-size="12">RADAR SYSTEM</text>
+                    <text x="10" y="38" fill="var(--accent-cos)" font-family="monospace" font-size="12" id="hud-x">X: 0.00</text>
+                    <text x="10" y="52" fill="var(--accent-sin)" font-family="monospace" font-size="12" id="hud-y">Y: 0.00</text>
+                </g>
             </svg>
             <input type="range" id="input-game" min="0" max="360" value="0" oninput="updateGameChar()">
         </div>
@@ -1086,12 +1100,6 @@
         // Stick Shadow Length L = 50 / tan(theta).
         const stickShadowL = 50 / Math.tan(rad);
         
-        // Ray Logic for Stick:
-        // Ray should start "in the sky" and pass through (100, 200) to (100+L, 250).
-        // Let's extend it backwards to Y=150.
-        // Slope m = 50/L = tan(theta).
-        // Delta X for Delta Y=50 is L.
-        // Start X = 100 - L. Start Y = 150.
         const rayStickStartX = 100 - stickShadowL;
         const rayStickEndX = 100 + stickShadowL;
         
@@ -1105,12 +1113,6 @@
         // Shadow L = 150 / tan(theta).
         const pyrShadowL = 150 / Math.tan(rad);
         
-        // Ray Logic for Pyramid:
-        // Pass through (450, 100).
-        // Extend backwards to Y = -50 (Sky high).
-        // Delta Y = 150. Delta X = pyrShadowL.
-        // From Top(450,100) to Y=-50 is Delta Y = -150.
-        // X shift = pyrShadowL.
         const rayPyrStartX = 450 - pyrShadowL;
         const rayPyrEndX = 450 + pyrShadowL;
         
@@ -1120,7 +1122,6 @@
         document.getElementById('ray-pyramid').setAttribute('x2', rayPyrEndX);
         document.getElementById('ray-pyramid').setAttribute('y2', 250);
 
-        // Update Text
         const realShadowStick = stickShadowL * 0.02; 
         const realShadowPyr = pyrShadowL * 0.02;
         const text = `角度${angleDeg}° : 杖影 ${realShadowStick.toFixed(2)}m (1:${realShadowStick.toFixed(2)}) / ピラミッド影 ${realShadowPyr.toFixed(1)}m`;
@@ -1198,12 +1199,10 @@
     let graphMode = 'sin';
     function setGraphMode(mode, btn) {
         graphMode = mode;
-        // update buttons
         const btns = document.querySelectorAll('#svg-graph + .interactive-area button, .interactive-area button');
         btns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
-        // Update styling of moving parts
         const color = mode === 'sin' ? 'var(--accent-sin)' : 
                       mode === 'cos' ? 'var(--accent-cos)' : 'var(--accent-tan)';
         
@@ -1222,7 +1221,6 @@
         const cx = 100;
         const cy = 100;
         
-        // Circle point P
         const px = cx + Math.cos(rad) * r;
         const py = cy - Math.sin(rad) * r;
         
@@ -1231,37 +1229,24 @@
         document.getElementById('graph-p').setAttribute('cx', px);
         document.getElementById('graph-p').setAttribute('cy', py);
         
-        // Calculate Value based on mode
         let val = 0;
         if(graphMode === 'sin') val = Math.sin(rad);
         if(graphMode === 'cos') val = Math.cos(rad);
         if(graphMode === 'tan') val = Math.tan(rad);
         
-        // Limit tan for visual sanity
         if(graphMode === 'tan') val = Math.max(-5, Math.min(5, val));
 
-        // Graph Plot Point (x maps 0-360 to 200-580)
         const graphX = 200 + (deg / 360) * 380;
-        
-        // Graph Y: center 100. Scale same as radius (60) for sin/cos.
-        // For tan, maybe scale down a bit or keep same.
         const graphY = 100 - val * 60;
         
         document.getElementById('graph-plot').setAttribute('cx', graphX);
         document.getElementById('graph-plot').setAttribute('cy', graphY);
         
-        // Connector Line
-        // Sin: Horizontal from Circle P to Graph P
-        // Cos: From P vertically down to axis? No, strictly mapping value.
-        // Let's just connect current P's relevant coord to Graph Y.
-        // Actually, the visual metaphor works best for Sin (Height->Height).
-        // For Cos (Width), visual link is harder. Just show line to Y.
         document.getElementById('graph-connector').setAttribute('x1', px);
         document.getElementById('graph-connector').setAttribute('y1', py);
         document.getElementById('graph-connector').setAttribute('x2', graphX);
         document.getElementById('graph-connector').setAttribute('y2', graphY);
         
-        // Draw Path
         let d = "";
         let move = true;
         for (let i = 0; i <= deg; i+=2) {
@@ -1272,10 +1257,9 @@
             if(graphMode === 'cos') v_i = Math.cos(r_i);
             if(graphMode === 'tan') v_i = Math.tan(r_i);
             
-            // Tan discontinuity check
             if (graphMode === 'tan') {
                 if (Math.abs(v_i) > 5) {
-                    move = true; // Lift pen
+                    move = true; 
                     continue;
                 }
             }
@@ -1296,52 +1280,88 @@
     }
     updateGraph(); // Init
 
-    // 5. Game Character
+    // 5. Game Character (NEW VISUALS)
     function updateGameChar() {
         const deg = document.getElementById('input-game').value;
         const rad = deg * (Math.PI / 180);
-        const r = 80;
+        const r = 100; // Orbit radius
         
+        // Planet Center: 200, 125
+        const cx = 200;
+        const cy = 125;
+        
+        // Calculate Position
+        // Note: SVG Y is down. To match Math unit circle (Counter Clockwise),
+        // we can use: x = cos, y = -sin.
         const x = r * Math.cos(rad);
-        const y = r * Math.sin(rad); // SVG coordinate: y down is positive
+        const y = -r * Math.sin(rad); 
         
-        // We want y up to be positive math convention in visualization?
-        // Game screens usually have y down. 
-        // Let's stick to screen coords: cx=150, cy=100.
-        // But sin(0)=0, sin(90)=1. 
-        // In screen: 0deg (right) -> x=r, y=0.
-        // 90deg (down in svg rotation, or up?). Math 90 is up.
-        // Let's map Math (Counter-Clockwise) to Screen.
-        // Math x = cos, Math y = sin.
-        // Screen x = cx + x. Screen y = cy - y.
+        const screenX = cx + x;
+        const screenY = cy + y;
         
-        const sx = 150 + x;
-        const sy = 100 - y;
+        // Update Group Position
+        const group = document.getElementById('game-char-group');
+        group.setAttribute('transform', `translate(${screenX}, ${screenY})`);
         
-        const char = document.getElementById('game-char');
-        char.setAttribute('transform', `translate(${sx}, ${sy})`);
+        // Update Sprite Rotation (Face tangent)
+        // Tangent angle is deg + 90 (or -90 depending on desired facing).
+        // Let's face "forward" in orbit.
+        // At 0 deg (Right), movement is Up (SVG -Y). -90 deg visual rotation.
+        // Rotation in SVG transform is clockwise.
+        // Angle of velocity vector is -rad + PI/2?
+        // Let's just create a rotation value that looks right.
+        // Standard angle is -deg (since Y is flipped). Tangent is -deg - 90.
+        const sprite = document.getElementById('game-char-sprite');
+        const rot = -deg + 90; 
+        sprite.setAttribute('transform', `rotate(${rot})`);
+        
+        // Update Projection Lines
+        const projX = document.getElementById('game-proj-x');
+        const projY = document.getElementById('game-proj-y');
+        
+        // Line to X-axis (Vertical line to y=0 relative to center)
+        // From (screenX, screenY) to (screenX, cy)
+        projX.setAttribute('x1', screenX);
+        projX.setAttribute('y1', screenY);
+        projX.setAttribute('x2', screenX);
+        projX.setAttribute('y2', cy);
+        
+        // Line to Y-axis (Horizontal line to x=0 relative to center)
+        // From (screenX, screenY) to (cx, screenY)
+        projY.setAttribute('x1', screenX);
+        projY.setAttribute('y1', screenY);
+        projY.setAttribute('x2', cx);
+        projY.setAttribute('y2', screenY);
+
+        // Update HUD
+        // X corresponds to Cos (Horizontal distance from center)
+        // Y corresponds to Sin (Vertical distance from center, up is pos)
+        const cosVal = Math.cos(rad).toFixed(2);
+        const sinVal = Math.sin(rad).toFixed(2);
+        
+        document.getElementById('hud-x').textContent = `X(cos): ${cosVal}`;
+        document.getElementById('hud-y').textContent = `Y(sin): ${sinVal}`;
     }
+    updateGameChar(); // Init
 
     // 6. Lissajous
     let lisTime = 0;
     function drawLissajous() {
         const canvas = document.getElementById('canvas-lissajous');
-        if(!canvas) return; // Not on slide
+        if(!canvas) return; 
         const ctx = canvas.getContext('2d');
         const a = parseInt(document.getElementById('lis-a').value);
         const b = parseInt(document.getElementById('lis-b').value);
         
-        // Fade effect
         ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#00ff9d';
         
-        // Draw multiple dots to speed up
         for(let i=0; i<10; i++) {
             lisTime += 0.01;
-            const x = 150 + 120 * Math.sin(a * lisTime + Math.PI/2); // sin(at)
-            const y = 150 + 120 * Math.sin(b * lisTime);     // sin(bt)
+            const x = 150 + 120 * Math.sin(a * lisTime + Math.PI/2); 
+            const y = 150 + 120 * Math.sin(b * lisTime);     
             
             ctx.beginPath();
             ctx.arc(x, y, 2, 0, Math.PI*2);
