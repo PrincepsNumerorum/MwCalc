@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学基礎講座：関数と平方完成（Ultimate Ver.）</title>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+    window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+    };
+</script>
+
+<style>
+    :root {
+        --bg-color: #121212;
+        --text-color: #e0e0e0;
+        --accent-primary: #00d2ff;   /* Cyber Blue */
+        --accent-secondary: #ff007a; /* Neon Pink */
+        --accent-tertiary: #00ff9d;  /* Neon Green */
+        --accent-quaternary: #ffcc00; /* Amber */
+        --panel-bg: #1e1e1e;
+        --slide-padding: 30px;
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Deck & Slide Structure */
+    #deck {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: var(--slide-padding);
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(50px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        z-index: 0;
+    }
+
+    .slide.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+        z-index: 10;
+    }
+
+    .slide.past {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    /* Typography */
+    h1 { font-size: 2.8rem; margin-bottom: 15px; color: var(--accent-primary); text-align: center; text-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+    h2 { font-size: 2.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--accent-primary); color: #fff; padding-bottom: 5px; }
+    h3 { font-size: 1.6rem; color: var(--accent-tertiary); margin: 15px 0; }
+    p, li { font-size: 1.4rem; line-height: 1.5; margin-bottom: 0.8rem; max-width: 950px; }
+    
+    ul { list-style: none; padding: 0; }
+    li { position: relative; padding-left: 1.5em; margin-bottom: 0.5em; }
+    li::before { content: "➤"; position: absolute; left: 0; color: var(--accent-primary); top: 0.1em; }
+
+    .highlight { color: var(--accent-secondary); font-weight: bold; }
+    .important { color: var(--accent-tertiary); font-weight: bold; border-bottom: 2px solid var(--accent-tertiary); }
+    .gold { color: var(--accent-quaternary); font-weight: bold; }
+    .small-text { font-size: 1.1rem; color: #aaa; }
+
+    /* Box & Layout */
+    .box {
+        background: var(--panel-bg);
+        border: 1px solid #444;
+        border-radius: 12px;
+        padding: 20px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        margin: 15px 0;
+        text-align: center;
+        width: fit-content;
+        min-width: 400px;
+        max-width: 90%;
+    }
+    
+    .compact-box {
+        padding: 10px 20px;
+        margin: 10px 0;
+        min-width: 300px;
+        border: 1px solid #555;
+    }
+
+    /* Interactive Elements */
+    .interactive-area {
+        background: #000;
+        border: 2px solid #333;
+        border-radius: 16px;
+        padding: 15px;
+        margin-top: 10px;
+        text-align: center;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        width: 100%;
+        max-width: 800px;
+        position: relative;
+    }
+    
+    svg { overflow: hidden; display: block; margin: 0 auto; max-height: 50vh; }
+    
+    .btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid #555;
+        color: white;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        transition: 0.2s;
+        margin-top: 10px;
+    }
+    .btn:hover { background: var(--accent-primary); color: #000; border-color: var(--accent-primary); }
+
+    .slider-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin: 5px 0;
+    }
+    .slider-label { width: 40px; text-align: right; font-weight: bold; }
+    input[type=range] { width: 250px; accent-color: var(--accent-primary); cursor: pointer; }
+    .val-display { width: 50px; text-align: left; font-family: monospace; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 1.3rem; margin: 10px 0; }
+    th, td { border: 1px solid #444; padding: 8px; text-align: center; height: 40px; }
+    th { background: #333; color: var(--accent-primary); }
+    td { background: rgba(255,255,255,0.05); transition: background 0.3s; }
+    .hidden-val { opacity: 0; transition: opacity 0.5s; }
+    .revealed-val { opacity: 1; }
+
+    /* Quiz Grid */
+    .quiz-grid { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 15px; 
+        width: 100%; 
+        max-width: 1000px; 
+        margin-top: 10px;
+        height: 60vh;
+        overflow-y: auto;
+    }
+    .quiz-item { 
+        background: #222; 
+        padding: 15px; 
+        border-radius: 8px; 
+        border: 1px solid #444; 
+        cursor: pointer; 
+        text-align: left;
+    }
+    .quiz-item:hover { border-color: var(--accent-tertiary); background: #2a2a2a; }
+    .quiz-q { font-size: 1.3rem; margin-bottom: 5px; font-weight: bold; }
+    .quiz-a { 
+        display: none; 
+        color: #ddd; 
+        font-size: 1.1rem; 
+        border-top: 1px solid #555; 
+        padding-top: 10px; 
+        margin-top: 10px;
+        line-height: 1.6;
+    }
+    .quiz-item.revealed .quiz-a { display: block; animation: fadeIn 0.5s; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Controls */
+    #controls { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 10px; z-index: 100; }
+    #progress-bar { position: fixed; bottom: 0; left: 0; height: 5px; background: var(--accent-primary); width: 0%; transition: width 0.3s; z-index: 100; }
+
+    /* Dimension lines */
+    .dim-line { stroke: #aaa; stroke-width: 1; marker-end: url(#arrow-dim); marker-start: url(#arrow-dim-start); }
+    .dim-text { fill: #aaa; font-size: 16px; font-family: monospace; }
+    
+    /* Sim Tables */
+    .sim-table td, .sim-table th { padding: 4px; font-size: 1.1rem; }
+
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+    <div class="slide active">
+        <h1>数学基礎講座</h1>
+        <p style="letter-spacing: 0.3em; color: #888;">FUNCTIONS & QUADRATICS</p>
+        <div class="box">
+            <h2 style="border:none; margin:0;">二次関数と平方完成</h2>
+        </div>
+        <p style="margin-top:40px; opacity: 0.6;">[→] キーまたは右下のボタンで開始</p>
+    </div>
+
+    <div class="slide">
+        <h2>本日のロードマップ</h2>
+        <ul>
+            <li>Part 1: 関数とは何か（変換マシン）</li>
+            <li>Part 2: 一次関数（直線の世界）</li>
+            <li>Part 3: 二次関数（曲線の世界・シミュレーション）</li>
+            <li>Part 4: 頂点の論理（なぜ求まるのか）</li>
+            <li>Part 5: 平方完成（面積のパズル）</li>
+            <li>Part 6: 実践演習と応用</li>
+        </ul>
+    </div>
+
+    <div class="slide">
+        <h1>Part 1<br>関数とは何か</h1>
+        <p>「関数」という言葉のイメージをアップデートしましょう。</p>
+    </div>
+
+    <div class="slide">
+        <h2>関数の定義</h2>
+        <div class="box">
+            <p>x を 1 つ決めると、<br>y が <span class="highlight">ただ 1 つに</span> 決まる規則</p>
+        </div>
+        <p>これ以上でも、これ以下でもありません。</p>
+    </div>
+
+    <div class="slide">
+        <h2>イメージ：変換マシン</h2>
+        <p>関数は、材料(x)を入れると製品(y)が出てくる<br><span class="highlight">「変換マシン」</span>のようなものです。</p>
+        <div class="interactive-area" style="height: 220px;">
+            <svg id="svg-func" viewBox="0 0 500 180">
+                <rect x="180" y="30" width="140" height="100" fill="#333" stroke="#fff" rx="10"/>
+                <text x="250" y="70" text-anchor="middle" fill="#fff" font-size="18">変換ルール</text>
+                <text x="250" y="95" text-anchor="middle" fill="var(--accent-primary)" font-size="22" font-weight="bold">y = 2x + 1</text>
+                
+                <text x="80" y="85" text-anchor="middle" fill="#aaa" font-size="20">x</text>
+                <line x1="110" y1="80" x2="170" y2="80" stroke="#fff" stroke-width="2" marker-end="url(#arrow)"/>
+                
+                <line x1="330" y1="80" x2="390" y2="80" stroke="#fff" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="420" y="85" text-anchor="middle" fill="var(--accent-secondary)" font-size="20">y</text>
+                
+                <circle id="anim-ball" cx="80" cy="80" r="15" fill="var(--accent-tertiary)" opacity="0"/>
+                
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#fff" />
+                    </marker>
+                </defs>
+            </svg>
+            <div style="margin-top:-10px;">
+                <input type="number" id="func-in" value="3" style="font-size:1.2rem; width:60px; text-align:center;">
+                <button class="btn" onclick="animFunction()">変換スタート</button>
+                <span style="margin-left: 20px; font-size: 1.5rem;">結果: <span id="func-out" class="important">?</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>マシンの本質</h2>
+        <p>「$2x+1$」という式が重要なのではありません。<br><span class="highlight">「入れたら、決まった値が出る」</span>という仕組み自体が関数です。</p>
+    </div>
+
+    <div class="slide">
+        <h1>Part 2<br>一次関数（直線の世界）</h1>
+        <p>今まで扱ってきた、最もシンプルな関数です。</p>
+    </div>
+
+    <div class="slide">
+        <h2>一次関数の表</h2>
+        <div class="box compact-box">
+            <h3 style="margin:5px;">変換ルール： $y = 2x + 1$</h3>
+        </div>
+        <p>下の表をクリックして、yの値を確かめてみましょう。</p>
+        <table id="table-linear">
+            <tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+            <tr><th>y</th>
+                <td><span class="hidden-val">1</span></td>
+                <td><span class="hidden-val">3</span></td>
+                <td><span class="hidden-val">5</span></td>
+                <td><span class="hidden-val">7</span></td>
+                <td><span class="hidden-val">9</span></td>
+            </tr>
+        </table>
+        <button class="btn" onclick="revealTable('table-linear')">次を表示</button>
+        <p id="linear-desc" style="margin-top:10px; opacity:0; color:var(--accent-tertiary);">増え方は +2 ずつで一定！</p>
+    </div>
+
+    <div class="slide">
+        <h2>グラフを描く（プロット）</h2>
+        <p>xとyのペアを座標に取ってみます。</p>
+        <div class="interactive-area">
+            <svg id="svg-linear" viewBox="-10 -10 320 220" style="background:#111;">
+                <line x1="20" y1="200" x2="300" y2="200" stroke="#555"/> <line x1="20" y1="0" x2="20" y2="200" stroke="#555"/> <path id="linear-path" stroke="var(--accent-primary)" stroke-width="2" fill="none" d=""/>
+                <g id="linear-points"></g>
+            </svg>
+            <button class="btn" onclick="plotLinearStep()">点を打つ</button>
+            <button class="btn" onclick="resetLinear()">リセット</button>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>一次関数の特徴</h2>
+        <ul>
+            <li>変化の割合が常に一定。</li>
+            <li>グラフは必ず「直線」になる。</li>
+            <li>未来の予測が簡単（ずっと同じペースだから）。</li>
+        </ul>
+    </div>
+
+    <div class="slide">
+        <h1>Part 3<br>二次関数（曲線の世界）</h1>
+        <p>なぜ「2乗」が必要なのか？</p>
+    </div>
+
+    <div class="slide">
+        <h2>ガリレオの発見</h2>
+        <div class="box">
+            <p>17世紀、ガリレオ・ガリレイは発見しました。<br>
+            落下距離は <span class="highlight">「時間の2乗」</span> に比例する。</p>
+        </div>
+        <p>加速する動きを表すには、一次関数では不十分でした。<br>ここで $x^2$ が登場します。</p>
+    </div>
+
+    <div class="slide">
+        <h2>【実験】大砲シミュレーター</h2>
+        <p>角度と火薬量（勢い）を決めて発射してください。<br>ストロボ撮影のように軌道を表示します。</p>
+        <div style="display:flex; width:100%; max-width:1000px; gap:20px; align-items:flex-start;">
+            <div class="interactive-area" style="flex:2; margin-top:0;">
+                <svg id="svg-cannon" viewBox="0 0 600 350" style="background:#001; border:1px solid #444;">
+                    <defs>
+                        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#222" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="600" height="350" fill="url(#grid)" />
+                    <g transform="translate(30, 320)">
+                         <line id="cannon-barrel" x1="0" y1="0" x2="40" y2="0" stroke="#888" stroke-width="8" stroke-linecap="round"/>
+                         <circle cx="0" cy="0" r="10" fill="#aaa"/>
+                    </g>
+                    <g id="cannon-trajectory"></g>
+                </svg>
+                <div style="display:flex; justify-content:space-around; align-items:center; margin-top:10px;">
+                    <label>角度: <input type="range" id="cannon-angle" min="10" max="80" value="60" oninput="updateCannonUI()"> <span id="val-angle">60</span>°</label>
+                    <label>パワー: <input type="range" id="cannon-power" min="50" max="120" value="90" oninput="updateCannonUI()"> <span id="val-power">90</span></label>
+                    <button class="btn" style="background:var(--accent-secondary); border:none;" onclick="fireCannon()">発射！</button>
+                </div>
+            </div>
+            
+            <div style="flex:1; height: 350px; overflow-y:auto; background:#111; border:1px solid #444; border-radius:10px; padding:10px;">
+                <h3 style="margin:0 0 10px 0; font-size:1.2rem;">計測データ</h3>
+                <table style="font-size:1rem; margin:0;">
+                    <thead><tr><th>時間(t)</th><th>横(x)</th><th>高(y)</th></tr></thead>
+                    <tbody id="cannon-data">
+                        <tr><td colspan="3">待機中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>二次関数の表</h2>
+        <div class="box compact-box">
+            <h3 style="margin:5px;">変換ルール： $y = x^2$</h3>
+        </div>
+        <p>増え方がどう変わるか見てみましょう。</p>
+        <table id="table-quad">
+            <tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+            <tr><th>y</th>
+                <td><span class="hidden-val">0</span></td>
+                <td><span class="hidden-val">1</span></td>
+                <td><span class="hidden-val">4</span></td>
+                <td><span class="hidden-val">9</span></td>
+                <td><span class="hidden-val">16</span></td>
+            </tr>
+        </table>
+        <button class="btn" onclick="revealTable('table-quad')">次を表示</button>
+        <p id="quad-desc" style="margin-top:10px; opacity:0; color:var(--accent-tertiary);">増え方は +1, +3, +5, +7... 加速している！</p>
+    </div>
+
+    <div class="slide">
+        <h2>グラフは「放物線」</h2>
+        <p>一次関数のような直線ではなく、曲がった線になります。</p>
+        <p>物を放り投げた時の線なので「放物線（ほうぶつせん）」です。</p>
+    </div>
+
+    <div class="slide">
+        <h2>【実験】一般形 $y = ax^2 + bx + c$</h2>
+        <p>係数 $a, b, c$ を自由に変えてみましょう。</p>
+        <div class="interactive-area" style="height: auto;">
+            <svg id="svg-gen" viewBox="-10 -10 20 20" preserveAspectRatio="xMidYMid slice" style="background:#050505;">
+                <defs>
+                    <pattern id="grid-gen" width="1" height="1" patternUnits="userSpaceOnUse">
+                        <path d="M 1 0 L 0 0 0 1" fill="none" stroke="#222" stroke-width="0.05"/>
+                    </pattern>
+                </defs>
+                <g transform="scale(1, -1)">
+                    <rect x="-10" y="-10" width="20" height="20" fill="url(#grid-gen)" />
+                    <line x1="-10" y1="0" x2="10" y2="0" stroke="#555" stroke-width="0.1"/>
+                    <line x1="0" y1="-10" x2="0" y2="10" stroke="#555" stroke-width="0.1"/>
+                    <path id="path-gen" stroke="var(--accent-tertiary)" stroke-width="0.2" fill="none"/>
+                </g>
+            </svg>
+            <div style="margin-top:10px;">
+                <div class="slider-container">
+                    <span class="slider-label" style="color:var(--accent-tertiary);">a</span>
+                    <input type="range" id="gen-a" min="-4" max="4" step="0.1" value="1" oninput="updateGen()">
+                    <span id="val-gen-a" class="val-display">1.0</span>
+                </div>
+                <div class="slider-container">
+                    <span class="slider-label" style="color:#aaa;">b</span>
+                    <input type="range" id="gen-b" min="-5" max="5" step="0.2" value="0" oninput="updateGen()">
+                    <span id="val-gen-b" class="val-display">0.0</span>
+                </div>
+                <div class="slider-container">
+                    <span class="slider-label" style="color:#aaa;">c</span>
+                    <input type="range" id="gen-c" min="-5" max="5" step="0.2" value="0" oninput="updateGen()">
+                    <span id="val-gen-c" class="val-display">0.0</span>
+                </div>
+            </div>
+            <p class="small-text">一般形では、bやcを変えると頂点が複雑に動き回ってしまいます。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h1>Part 4<br>頂点の論理</h1>
+        <p>グラフを描くには、「頂点」がどこにあるかが最重要です。<br>なぜ特定の形にすると頂点がわかるのか、その本質に迫ります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>2つの表記方法</h2>
+        <p>二次関数には、2つの書き方があります。</p>
+        <div class="box compact-box">
+            <h3>1. 一般形（いっぱんけい）</h3>
+            <p>$y = ax^2 + bx + c$</p>
+            <p class="small-text">※さっき実験した通り、頂点の位置が直感的に分かりません。</p>
+        </div>
+        <div class="box compact-box" style="border-color:var(--accent-secondary);">
+            <h3>2. 標準形（ひょうじゅんけい）</h3>
+            <p>$y = a(x-p)^2 + q$</p>
+            <p class="highlight">頂点 = $(p, q)$</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>【実験】標準形 $y = a(x-p)^2 + q$</h2>
+        <p>係数 $a, p, q$ を変えてみましょう。</p>
+        <div class="interactive-area" style="height: auto;">
+            <svg id="svg-std" viewBox="-10 -10 20 20" preserveAspectRatio="xMidYMid slice" style="background:#050505;">
+                <g transform="scale(1, -1)">
+                    <rect x="-10" y="-10" width="20" height="20" fill="url(#grid-gen)" />
+                    <line x1="-10" y1="0" x2="10" y2="0" stroke="#555" stroke-width="0.1"/>
+                    <line x1="0" y1="-10" x2="0" y2="10" stroke="#555" stroke-width="0.1"/>
+                    
+                    <path id="path-std" stroke="var(--accent-secondary)" stroke-width="0.2" fill="none"/>
+                    <circle id="dot-std" r="0.4" fill="white"/>
+                    <line id="line-p" stroke="#444" stroke-width="0.1" stroke-dasharray="0.5"/>
+                    <line id="line-q" stroke="#444" stroke-width="0.1" stroke-dasharray="0.5"/>
+                </g>
+            </svg>
+            <div style="margin-top:10px;">
+                <div class="slider-container">
+                    <span class="slider-label" style="color:var(--accent-secondary);">a</span>
+                    <input type="range" id="std-a" min="-4" max="4" step="0.1" value="1" oninput="updateStd()">
+                    <span id="val-std-a" class="val-display">1.0</span>
+                </div>
+                <div class="slider-container">
+                    <span class="slider-label" style="color:var(--accent-tertiary);">p</span>
+                    <input type="range" id="std-p" min="-5" max="5" step="0.2" value="3" oninput="updateStd()">
+                    <span id="val-std-p" class="val-display">3.0</span>
+                </div>
+                <div class="slider-container">
+                    <span class="slider-label" style="color:var(--accent-quaternary);">q</span>
+                    <input type="range" id="std-q" min="-5" max="5" step="0.2" value="2" oninput="updateStd()">
+                    <span id="val-std-q" class="val-display">2.0</span>
+                </div>
+            </div>
+            <p class="small-text">pが横移動、qが縦移動に直結しているのが分かります。</p>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>なぜ頂点が必ず求まるのか？</h2>
+        <p>公式として丸暗記してはいけません。<br>これは数学の<span class="important">「ある絶対的な事実」</span>に基づいています。</p>
+    </div>
+
+    <div class="slide">
+        <h2>絶対的な事実：平方は0以上</h2>
+        <div class="box">
+            $$ (\text{何か})^2 \ge 0 $$
+        </div>
+        <p>同じ数を2回掛けると、必ず0以上になります。<br>($2 \times 2 = 4$, $-2 \times -2 = 4$)</p>
+        <p>つまり、<span class="highlight">「2乗の部分は、一番小さくても0にしかなれない」</span>のです。</p>
+    </div>
+
+    <div class="slide">
+        <h2>横の移動：$y=(x-3)^2$</h2>
+        <p>この式が一番小さくなる（0になる）のはいつでしょうか？</p>
+        <div class="box">
+            $$ x - 3 = 0 \quad \text{のとき} $$
+            $$ \text{つまり} \quad x = 3 $$
+        </div>
+        <p>だから、頂点のx座標は <span class="highlight">3</span> になります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>縦の移動：$y=(x-3)^2 + 5$</h2>
+        <p>前の式に $+5$ されています。</p>
+        <div class="box">
+            $$ \underbrace{(x-3)^2}_{\text{最小0}} + 5 $$
+        </div>
+        <p>0 に 5 を足すので、一番小さい値は <span class="highlight">5</span> です。<br>だから、頂点のy座標は 5 になります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>結論：頂点(p, q)は必然</h2>
+        <p>$$y = a(x-p)^2 + q$$</p>
+        <p>この形にすれば、<br>「$x$が$p$のとき、2乗が消えて、残りの$q$になる」<br>ということが一目でわかります。</p>
+        <p class="important">だから、この形を目指して式変形をするのです。</p>
+    </div>
+
+    <div class="slide">
+        <h1>Part 5<br>平方完成の仕組み</h1>
+        <p>「平方」＝ 正方形、「完成」＝ 作り切る。<br>バラバラな面積を、1つの正方形に組み替えるパズルです。</p>
+    </div>
+
+    <div class="slide">
+        <h2>平方完成のイメージ</h2>
+        <p>一般形 $ax^2+bx$ は、面積が散らかった状態です。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 500 200">
+                <rect x="50" y="50" width="80" height="80" fill="#222" stroke="#555" stroke-dasharray="4"/>
+                <rect x="140" y="60" width="30" height="60" fill="#222" stroke="#555" stroke-dasharray="4"/>
+                <rect x="60" y="140" width="60" height="20" fill="#222" stroke="#555" stroke-dasharray="4"/>
+                <text x="120" y="30" fill="#aaa" text-anchor="middle">バラバラな面積</text>
+
+                <line x1="200" y1="100" x2="280" y2="100" stroke="var(--accent-primary)" stroke-width="4" marker-end="url(#arrow)"/>
+                <text x="240" y="80" fill="var(--accent-primary)" text-anchor="middle">再配置</text>
+
+                <rect x="320" y="50" width="100" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="3"/>
+                <rect x="420" y="150" width="20" height="20" fill="none" stroke="red" stroke-dasharray="2"/>
+                <text x="370" y="100" fill="#fff" text-anchor="middle">正方形</text>
+                <text x="450" y="180" fill="red" text-anchor="middle">調整(-q)</text>
+            </svg>
+        </div>
+        <p>これを整理整頓して、きれいな正方形を作ります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>Step 1: 部品の確認</h2>
+        <p>例として $x^2 + 6x$ を考えます。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 400 200">
+                <defs>
+                    <marker id="arrow-dim" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 L0,0" fill="#aaa"/></marker>
+                    <marker id="arrow-dim-start" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6 L6,0" fill="#aaa"/></marker>
+                </defs>
+                <rect x="100" y="50" width="100" height="100" fill="#222" stroke="var(--accent-primary)" stroke-width="2"/>
+                <text x="150" y="100" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="20">x²</text>
+                <line x1="90" y1="50" x2="90" y2="150" class="dim-line"/>
+                <text x="80" y="100" text-anchor="middle" class="dim-text">x</text>
+                <line x1="100" y1="40" x2="200" y2="40" class="dim-line"/>
+                <text x="150" y="30" text-anchor="middle" class="dim-text">x</text>
+                
+                <rect x="210" y="50" width="60" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <text x="240" y="100" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="20">6x</text>
+                <line x1="210" y1="40" x2="270" y2="40" class="dim-line"/>
+                <text x="240" y="30" text-anchor="middle" class="dim-text">6</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Step 2: 長方形を半分にする</h2>
+        <p>正方形を作るために、$6x$ を半分に切ります。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 400 200">
+                <rect x="100" y="50" width="100" height="100" fill="#222" stroke="var(--accent-primary)" stroke-width="2"/>
+                <text x="150" y="100" text-anchor="middle" fill="#fff">x²</text>
+                
+                <rect x="210" y="50" width="30" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <text x="225" y="100" text-anchor="middle" fill="#fff">3x</text>
+                <line x1="210" y1="40" x2="240" y2="40" class="dim-line"/>
+                <text x="225" y="30" text-anchor="middle" class="dim-text">3</text>
+                
+                <rect x="250" y="50" width="30" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <text x="265" y="100" text-anchor="middle" fill="#fff">3x</text>
+                <line x1="250" y1="40" x2="280" y2="40" class="dim-line"/>
+                <text x="265" y="30" text-anchor="middle" class="dim-text">3</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Step 3: 配置を変える</h2>
+        <p>片方の $3x$ を、正方形の下に移動させます。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 400 300">
+                <rect x="100" y="50" width="100" height="100" fill="#222" stroke="var(--accent-primary)" stroke-width="2"/>
+                <rect x="205" y="50" width="30" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <text x="220" y="100" text-anchor="middle" fill="#fff">3x</text>
+                <rect x="100" y="155" width="100" height="30" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <text x="150" y="170" text-anchor="middle" fill="#fff">3x</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Step 4: 「穴」の発見</h2>
+        <p>右下に穴が開いています。<br>ここが埋まれば、完全な正方形になります。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 400 300">
+                <rect x="100" y="50" width="100" height="100" fill="#222" stroke="var(--accent-primary)" stroke-width="2"/>
+                <rect x="205" y="50" width="30" height="100" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <rect x="100" y="155" width="100" height="30" fill="#222" stroke="var(--accent-secondary)" stroke-width="2"/>
+                <rect x="205" y="155" width="30" height="30" fill="none" stroke="red" stroke-dasharray="4"/>
+                <text x="220" y="175" text-anchor="middle" fill="red" font-weight="bold">?</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Step 5: 穴の大きさを計算</h2>
+        <p>穴の縦と横は、さっき半分にした「3」です。<br>つまり面積は $3 \times 3 = 9$ です。</p>
+        <div class="interactive-area" style="background:transparent; border:none; box-shadow:none;">
+            <svg viewBox="0 0 400 300">
+                <rect x="100" y="50" width="100" height="100" opacity="0.2" fill="#fff"/>
+                <rect x="205" y="50" width="30" height="100" opacity="0.2" fill="#fff"/>
+                <rect x="100" y="155" width="100" height="30" opacity="0.2" fill="#fff"/>
+                
+                <rect x="205" y="155" width="30" height="30" fill="red" opacity="0.5"/>
+                <text x="220" y="175" text-anchor="middle" fill="#fff" font-weight="bold">9</text>
+                
+                <line x1="205" y1="145" x2="235" y2="145" class="dim-line"/>
+                <text x="220" y="135" text-anchor="middle" class="dim-text">3</text>
+                <line x1="195" y1="155" x2="195" y2="185" class="dim-line"/>
+                <text x="185" y="175" text-anchor="middle" class="dim-text">3</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Step 6: 数式で表現する</h2>
+        <p>「穴を埋める」＝「9を足す」ことです。<br>しかし、勝手に足してはいけません。</p>
+    </div>
+
+    <div class="slide">
+        <h2>Step 7: 足して、すぐ引く</h2>
+        <div class="box">
+            $$x^2 + 6x \quad \mathbf{+9 -9}$$
+        </div>
+        <p>これが平方完成の核心です。<br>「$+9-9$」はゼロなので、式の値自体は変わっていません。</p>
+    </div>
+
+    <div class="slide">
+        <h2>Step 8: まとめる</h2>
+        <p>前半の $x^2 + 6x + 9$ は、きれいな正方形 $(x+3)^2$ になりました。</p>
+        <div class="box">
+            $$(x+3)^2 - 9$$
+        </div>
+        <p>これで変形完了です。</p>
+    </div>
+
+    <div class="slide">
+        <h2>平方完成のアルゴリズム</h2>
+        <p>機械的な手順を覚えましょう。</p>
+        <ol>
+            <li>$x$ の係数を見る（例：6）</li>
+            <li><strong>半分にする</strong>（3）</li>
+            <li><strong>2乗する</strong>（9）</li>
+            <li>その数を「足して引く」</li>
+        </ol>
+    </div>
+
+    <div class="slide">
+        <h1>実践演習：基本編</h1>
+        <p>例題1を、省略せずにゆっくり解いてみます。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題1：基本</h2>
+        <div class="box">
+            $$y = x^2 + 6x + 5$$
+        </div>
+        <p>これの頂点を求めます。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題1：Step 1</h2>
+        <p>$x$ の係数「6」に注目します。</p>
+        <p>半分は 3。2乗は 9 です。</p>
+        <p class="highlight">「9を足して引く」準備をします。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題1：Step 2</h2>
+        <div class="box">
+            $$y = (x^2 + 6x \mathbf{+9 -9}) + 5$$
+        </div>
+        <p>カッコの中で、9を足して引きました。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題1：Step 3</h2>
+        <p>前半の3つを因数分解します。</p>
+        <div class="box">
+            $$y = \underbrace{(x^2 + 6x + 9)}_{(x+3)^2} - 9 + 5$$
+        </div>
+        <p>$$y = (x+3)^2 - 9 + 5$$</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題1：Step 4（完成）</h2>
+        <p>後ろの数字を計算します。</p>
+        <div class="box">
+            $$y = (x+3)^2 - 4$$
+        </div>
+        <p>よって、頂点は <span class="highlight">$(-3, -4)$</span> です。</p>
+    </div>
+
+    <div class="slide">
+        <h1>実践演習：応用編</h1>
+        <p>係数がついている場合（$a \neq 1$）の手順を確認します。<br>ここが最もミスしやすいポイントです。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：係数あり</h2>
+        <div class="box">
+            $$y = 2x^2 + 8x + 1$$
+        </div>
+        <p>まず、先頭の「2」で $x$ の部分だけをくくります。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：Step 1（くくる）</h2>
+        <div class="box">
+            $$y = 2(x^2 + 4x) + 1$$
+        </div>
+        <p>後ろの $+1$ は、まだ触りません。<br>カッコの中の $4x$ に注目します。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：Step 2（カッコの中）</h2>
+        <p>$4$ の半分は $2$。2乗は $4$ です。<br>カッコの中で「4を足して引く」を行います。</p>
+        <div class="box">
+            $$y = 2(x^2 + 4x \mathbf{+4 -4}) + 1$$
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：Step 3（因数分解）</h2>
+        <p>カッコの中の前半3つをまとめます。</p>
+        <div class="box">
+            $$y = 2 \{ (x+2)^2 - 4 \} + 1$$
+        </div>
+        <p>まだ外側に「2」が掛かっていることに注意してください。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：Step 4（展開）</h2>
+        <p>中カッコを外します。この時、$-4$ にも先頭の「2」が掛かります！</p>
+        <div class="box">
+            $$y = 2(x+2)^2 \underbrace{- 8}_{2 \times (-4)} + 1$$
+        </div>
+        <p class="important">ここが最大のミスポイントです。</p>
+    </div>
+
+    <div class="slide">
+        <h2>例題2：Step 5（完成）</h2>
+        <p>定数項を計算します。</p>
+        <div class="box">
+            $$y = 2(x+2)^2 - 7$$
+        </div>
+        <p>よって、頂点は <span class="highlight">$(-2, -7)$</span> です。</p>
+    </div>
+    
+    <div class="slide">
+        <h1>Part 6<br>現実社会での応用</h1>
+        <p>二次関数の「頂点」を求めること（平方完成）は、<br>現実社会でどのように役立っているのでしょうか。</p>
+    </div>
+
+    <div class="slide">
+        <h2>応用1：マーケティング（最大利益）</h2>
+        <p>「価格を上げると客は減る」という状況で、利益を最大化します。<br>
+        <span class="small-text">※モデル：客数 = 500 - (2 × 価格)</span></p>
+        <div style="display:flex; justify-content:center; gap:30px; margin-top:10px;">
+            <div class="interactive-area" style="width:400px; height:auto; margin:0;">
+                 <svg id="svg-market" viewBox="-10 -10 320 220" style="background:#111;">
+                     <line x1="20" y1="200" x2="300" y2="200" stroke="#555"/>
+                     <line x1="20" y1="10" x2="20" y2="200" stroke="#555"/>
+                     <text x="300" y="215" fill="#aaa" font-size="12">価格</text>
+                     <text x="10" y="10" fill="#aaa" font-size="12">利益</text>
+                     <path id="path-market" stroke="var(--accent-tertiary)" stroke-width="2" fill="none"/>
+                     <circle id="dot-market" r="5" fill="white"/>
+                 </svg>
+            </div>
+            <div class="box compact-box" style="width:300px; text-align:left; font-size:1.2rem;">
+                <p>ジュースの原価: <strong>100円</strong></p>
+                <hr>
+                <div style="margin:10px 0;">
+                    <label>販売価格: <input type="range" id="input-price" min="100" max="250" value="120" oninput="updateMarket()" style="width:100%"></label>
+                </div>
+                <table class="sim-table">
+                    <tr><td>販売価格</td><td id="m-price" class="highlight" style="font-size:1.4rem;">120円</td></tr>
+                    <tr><td>1本利益</td><td id="m-unit-profit">20円</td></tr>
+                    <tr><td>予想客数</td><td id="m-customers">260人</td></tr>
+                    <tr style="border-top:2px solid #555;"><td><strong>総利益</strong></td><td id="m-total-profit" class="important" style="font-size:1.6rem;">5200円</td></tr>
+                </table>
+                <p id="m-msg" style="color:var(--accent-quaternary); font-weight:bold; height:1.5em;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>応用2：パラボラアンテナ</h2>
+        <p>放物線は、軸に平行に入ってきた電波を<span class="highlight">「必ず焦点に反射する」</span>性質があります。<br>どこに当たっても、です。</p>
+        <div class="interactive-area" style="height: auto;">
+             <svg id="svg-antenna" viewBox="-120 -20 240 220" style="background:#001;">
+                 <path d="M -100 100 Q 0 200 100 100" stroke="none" fill="none"/> <path id="dish-curve" d="" stroke="#888" stroke-width="4" fill="none"/>
+                 
+                 <circle cx="0" cy="40" r="5" fill="var(--accent-primary)"/>
+                 <text x="10" y="45" fill="var(--accent-primary)" font-size="12">受信部(焦点)</text>
+                 <g id="radio-waves"></g>
+             </svg>
+             <button class="btn" onclick="animAntenna()">電波受信（物理シミュレーション）</button>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h1>最終確認テスト</h1>
+        <p>全6問です。クリックすると、答えだけでなく<span class="highlight">詳細な途中式</span>が表示されます。<br>ノートに解いてからクリックしましょう。</p>
+    </div>
+
+    <div class="slide">
+        <div class="quiz-grid">
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">① $y = x^2 + 2x + 3$</div>
+                <div class="quiz-a">
+                    1. 係数2の半分は1。2乗は1。<br>
+                    2. $y = (x^2+2x+1-1)+3$<br>
+                    3. $y = (x+1)^2 - 1 + 3$<br>
+                    4. $y = (x+1)^2 + 2$<br>
+                    <span class="highlight">頂点 (-1, 2)</span>
+                </div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">② $y = x^2 - 4x + 1$</div>
+                <div class="quiz-a">
+                    1. 係数-4の半分は-2。2乗は4。<br>
+                    2. $y = (x^2-4x+4-4)+1$<br>
+                    3. $y = (x-2)^2 - 4 + 1$<br>
+                    4. $y = (x-2)^2 - 3$<br>
+                    <span class="highlight">頂点 (2, -3)</span>
+                </div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">③ $y = 3x^2 + 6x + 2$</div>
+                <div class="quiz-a">
+                    1. 3でくくる：$3(x^2+2x)+2$<br>
+                    2. 半分1、2乗1：$3(x^2+2x+1-1)+2$<br>
+                    3. 3を掛けて出す：$3(x+1)^2 -3 +2$<br>
+                    <span class="highlight">頂点 (-1, -1)</span>
+                </div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">④ $y = 2x^2 - 8x + 5$</div>
+                <div class="quiz-a">
+                    1. 2でくくる：$2(x^2-4x)+5$<br>
+                    2. 半分-2、2乗4：$2(x^2-4x+4-4)+5$<br>
+                    3. 2を掛けて出す：$2(x-2)^2 -8 +5$<br>
+                    <span class="highlight">頂点 (2, -3)</span>
+                </div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">⑤ $y = -x^2 + 2x + 3$</div>
+                <div class="quiz-a">
+                    1. -1でくくる：$-(x^2-2x)+3$<br>
+                    2. 半分-1、2乗1：$-(x^2-2x+1-1)+3$<br>
+                    3. -1を掛けて出す：$-(x-1)^2 +1 +3$<br>
+                    <span class="highlight">頂点 (1, 4)</span>
+                </div>
+            </div>
+            <div class="quiz-item" onclick="this.classList.toggle('revealed')">
+                <div class="quiz-q">⑥ $y = \frac{1}{2}x^2 - 3x + 1$</div>
+                <div class="quiz-a">
+                    1. 1/2でくくる：$\frac{1}{2}(x^2-6x)+1$<br>
+                    2. 半分-3、2乗9：$\frac{1}{2}(x^2-6x+9-9)+1$<br>
+                    3. 1/2を掛けて出す：$\frac{1}{2}(x-3)^2 -\frac{9}{2} +1$<br>
+                    4. $\frac{1}{2}(x-3)^2 -3.5$<br>
+                    <span class="highlight">頂点 (3, -3.5)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h1>本日のまとめ</h1>
+        <ul>
+            <li>関数は「入力と出力の変換ルール」。</li>
+            <li>二次関数は「加速する世界」を表す放物線。</li>
+            <li>平方完成は「頂点を見つけるためのパズル」。</li>
+            <li>この技術は、ビジネスの最大化や宇宙通信にも使われている。</li>
+        </ul>
+        <button class="btn" onclick="goToSlide(0)" style="margin-top:40px;">最初に戻る</button>
+    </div>
+
+</div>
+
+<div id="controls">
+    <button class="btn" onclick="prevSlide()">◀</button>
+    <button class="btn" onclick="nextSlide()">▶</button>
+</div>
+<div id="progress-bar"></div>
+
+<script>
+    // --- Slide System Logic ---
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progress-bar');
+    let currentSlide = 0;
+
+    function updateView() {
+        slides.forEach((slide, index) => {
+            slide.classList.remove('active', 'past');
+            if (index === currentSlide) {
+                slide.classList.add('active');
+            } else if (index < currentSlide) {
+                slide.classList.add('past');
+            }
+        });
+        const progress = ((currentSlide + 1) / slides.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function nextSlide() {
+        if (currentSlide < slides.length - 1) {
+            currentSlide++;
+            updateView();
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            updateView();
+        }
+    }
+
+    function goToSlide(index) {
+        currentSlide = index;
+        updateView();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') nextSlide();
+        if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    // --- Interactive Logic ---
+
+    // 1. Function Machine
+    function animFunction() {
+        const inputVal = parseFloat(document.getElementById('func-in').value);
+        const resultVal = inputVal * 2 + 1;
+        const ball = document.getElementById('anim-ball');
+        const outText = document.getElementById('func-out');
+        
+        outText.textContent = "?";
+        ball.style.transition = 'none';
+        ball.setAttribute('cx', 80);
+        ball.setAttribute('opacity', 1);
+        ball.setAttribute('fill', 'var(--accent-tertiary)');
+
+        setTimeout(() => {
+            ball.style.transition = 'all 0.5s ease-in';
+            ball.setAttribute('cx', 180);
+        }, 50);
+
+        setTimeout(() => {
+            ball.setAttribute('fill', 'var(--accent-secondary)');
+        }, 600);
+
+        setTimeout(() => {
+            ball.style.transition = 'all 0.5s ease-out';
+            ball.setAttribute('cx', 330);
+        }, 1200);
+
+        setTimeout(() => {
+            outText.textContent = resultVal;
+            ball.setAttribute('opacity', 0);
+        }, 1700);
+    }
+
+    // 2. Table Reveal Logic
+    const tableStates = { 'table-linear': 0, 'table-quad': 0 };
+
+    function revealTable(tableId) {
+        const table = document.getElementById(tableId);
+        const hiddenSpans = table.querySelectorAll('.hidden-val');
+        
+        if (tableStates[tableId] < hiddenSpans.length) {
+            hiddenSpans[tableStates[tableId]].classList.add('revealed-val');
+            tableStates[tableId]++;
+            if(tableStates[tableId] === hiddenSpans.length) {
+                if(tableId === 'table-linear') document.getElementById('linear-desc').style.opacity = 1;
+                if(tableId === 'table-quad') document.getElementById('quad-desc').style.opacity = 1;
+            }
+        }
+    }
+
+    // 3. Linear Plotter
+    let linearStep = 0;
+    const linearData = [0, 1, 2, 3, 4, 5]; 
+    
+    function plotLinearStep() {
+        if (linearStep >= linearData.length) return;
+        const x = linearData[linearStep];
+        const y = 2 * x + 1;
+        const sx = 20 + x * 50;
+        const sy = 200 - y * 15;
+        
+        const g = document.getElementById('linear-points');
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", sx);
+        circle.setAttribute("cy", sy);
+        circle.setAttribute("r", 5);
+        circle.setAttribute("fill", "#fff");
+        g.appendChild(circle);
+
+        const path = document.getElementById('linear-path');
+        let d = path.getAttribute('d');
+        d = (linearStep === 0) ? `M ${sx} ${sy}` : d + ` L ${sx} ${sy}`;
+        path.setAttribute('d', d);
+        linearStep++;
+    }
+
+    function resetLinear() {
+        linearStep = 0;
+        document.getElementById('linear-points').innerHTML = '';
+        document.getElementById('linear-path').setAttribute('d', '');
+    }
+
+    // 4. Cannon Game
+    function updateCannonUI() {
+        document.getElementById('val-angle').textContent = document.getElementById('cannon-angle').value;
+        document.getElementById('val-power').textContent = document.getElementById('cannon-power').value;
+        const angle = document.getElementById('cannon-angle').value;
+        const barrel = document.getElementById('cannon-barrel');
+        barrel.setAttribute('transform', `rotate(${-angle})`);
+    }
+    updateCannonUI();
+
+    function fireCannon() {
+        const angle = parseFloat(document.getElementById('cannon-angle').value);
+        const power = parseFloat(document.getElementById('cannon-power').value);
+        const g = 9.8; 
+        const rad = angle * Math.PI / 180;
+        const v0 = power * 1.5; 
+        
+        const trajGroup = document.getElementById('cannon-trajectory');
+        trajGroup.innerHTML = '';
+        const dataBody = document.getElementById('cannon-data');
+        dataBody.innerHTML = '';
+
+        let t = 0;
+        const dt = 0.2; 
+        const originX = 30;
+        const originY = 320;
+
+        function step() {
+            const x = v0 * Math.cos(rad) * t;
+            const y = v0 * Math.sin(rad) * t - 0.5 * g * t * t;
+
+            if (y < -10 && t > 0) return; 
+
+            const sx = originX + x;
+            const sy = originY - y;
+            
+            if (sx > 600 || sy > 350) return; 
+
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", sx);
+            circle.setAttribute("cy", sy);
+            circle.setAttribute("r", 3);
+            circle.setAttribute("fill", "var(--accent-secondary)");
+            circle.setAttribute("opacity", 0.8);
+            trajGroup.appendChild(circle);
+
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${t.toFixed(1)}</td><td>${x.toFixed(0)}m</td><td>${y.toFixed(0)}m</td>`;
+            dataBody.prepend(row);
+
+            t += dt;
+            requestAnimationFrame(() => setTimeout(step, 50));
+        }
+        step();
+    }
+
+    // 5. Improved Graphs (General & Standard)
+    function updateGen() {
+        const a = parseFloat(document.getElementById('gen-a').value);
+        const b = parseFloat(document.getElementById('gen-b').value);
+        const c = parseFloat(document.getElementById('gen-c').value);
+        document.getElementById('val-gen-a').textContent = a.toFixed(1);
+        document.getElementById('val-gen-b').textContent = b.toFixed(1);
+        document.getElementById('val-gen-c').textContent = c.toFixed(1);
+
+        const path = document.getElementById('path-gen');
+        let d = "";
+        
+        // Logical coords: x from -10 to 10. y = ax^2+bx+c
+        // If y is outside -10 to 10, clamp it visually or just draw off-screen (SVG handles off-screen)
+        // But to prevent weird looping artifacts, we sample carefully.
+        
+        let started = false;
+        
+        for (let x = -10; x <= 10; x += 0.1) {
+            let y = a*x*x + b*x + c;
+            
+            // Note: SVG Y is inverted in our group transform, so we use y directly.
+            // Check bounds to avoid drawing lines to infinity
+            if (y < -15 || y > 15) {
+                // If point is way off screen, we might want to skip or clamp
+                // For smooth curve, better to draw slightly off screen
+                if (y > 15) y = 15;
+                if (y < -15) y = -15;
+            }
+            
+            if (!started) {
+                d += `M ${x} ${y}`;
+                started = true;
+            } else {
+                d += ` L ${x} ${y}`;
+            }
+        }
+        path.setAttribute('d', d);
+    }
+    updateGen();
+
+    function updateStd() {
+        const a = parseFloat(document.getElementById('std-a').value);
+        const p = parseFloat(document.getElementById('std-p').value);
+        const q = parseFloat(document.getElementById('std-q').value);
+        document.getElementById('val-std-a').textContent = a.toFixed(1);
+        document.getElementById('val-std-p').textContent = p.toFixed(1);
+        document.getElementById('val-std-q').textContent = q.toFixed(1);
+
+        const path = document.getElementById('path-std');
+        const dot = document.getElementById('dot-std');
+        const lineP = document.getElementById('line-p');
+        const lineQ = document.getElementById('line-q');
+
+        let d = "";
+        let started = false;
+        for (let x = -10; x <= 10; x += 0.1) {
+            let y = a * Math.pow((x - p), 2) + q;
+             if (y < -15 || y > 15) {
+                if (y > 15) y = 15;
+                if (y < -15) y = -15;
+            }
+            if (!started) {
+                d += `M ${x} ${y}`;
+                started = true;
+            } else {
+                d += ` L ${x} ${y}`;
+            }
+        }
+        path.setAttribute('d', d);
+
+        // Update dot (vertex)
+        dot.setAttribute('cx', p);
+        dot.setAttribute('cy', q);
+
+        // Update guide lines
+        // Vertical line at x=p
+        lineP.setAttribute('x1', p); lineP.setAttribute('x2', p);
+        lineP.setAttribute('y1', 0); lineP.setAttribute('y2', q);
+        
+        // Horizontal line at y=q
+        lineQ.setAttribute('x1', 0); lineQ.setAttribute('x2', p);
+        lineQ.setAttribute('y1', q); lineQ.setAttribute('y2', q);
+    }
+    updateStd();
+
+    // 6. Marketing App (Simulated)
+    function updateMarket() {
+        const price = parseInt(document.getElementById('input-price').value);
+        const cost = 100;
+        // Model: Customers = 500 - 2 * Price
+        const customers = Math.max(0, 500 - 2 * price);
+        const unitProfit = price - cost;
+        const totalProfit = unitProfit * customers;
+        
+        // Update Table
+        document.getElementById('m-price').textContent = price + "円";
+        document.getElementById('m-unit-profit').textContent = unitProfit + "円";
+        document.getElementById('m-customers').textContent = customers + "人";
+        document.getElementById('m-total-profit').textContent = totalProfit + "円";
+
+        // Update Graph (Parabola)
+        // Max profit occurs at Vertex. P = (500/2 + 100)/2 = 175. Max Profit = 75*150 = 11250.
+        // Scale X: 100~250. Scale Y: 0~12000.
+        
+        // Draw Curve
+        const path = document.getElementById('path-market');
+        let d = "";
+        for(let p=100; p<=250; p+=2) {
+            let prof = (p-cost) * (500 - 2*p);
+            // Map p(100-250) to x(0-300)
+            let sx = (p - 100) * 2; 
+            // Map prof(0-12000) to y(200-0)
+            let sy = 200 - (prof / 11250) * 180; 
+            
+            if(p===100) d += `M ${sx} ${sy}`;
+            else d += ` L ${sx} ${sy}`;
+        }
+        path.setAttribute('d', d);
+        
+        // Draw Dot
+        let sx = (price - 100) * 2;
+        let sy = 200 - (totalProfit / 11250) * 180;
+        document.getElementById('dot-market').setAttribute('cx', sx);
+        document.getElementById('dot-market').setAttribute('cy', sy);
+        
+        // Message
+        let msg = "";
+        if(price === 175) msg = "★最大利益達成！★";
+        else if(price < 110) msg = "安すぎて利益が出ません";
+        else if(price > 240) msg = "高すぎて売れません";
+        document.getElementById('m-msg').textContent = msg;
+    }
+    updateMarket();
+
+    // 7. Antenna App (Physics)
+    // Draw parabolic dish y = x^2/160 + 20 (Visual offset)
+    // Parabola geometry: x^2 = 4py. Here x^2 = 160(y-offset). 4p = 160 -> p=40. Focus is (0, offset+40).
+    // Let's draw curve: M -100 82.5 ...
+    // Focus at (0, 40). Vertex at (0, 0). Equation y = x^2 / 160.
+    
+    // Draw static curve
+    const dish = document.getElementById('dish-curve');
+    let dDish = "";
+    for(let x=-100; x<=100; x+=2) {
+        let y = (x*x)/160;
+        // In SVG 0 is top. We want vertex at bottom? 
+        // Let's use coordinate logic: Focus is (0, 40). Vertex is (0,0).
+        // BUT to look like a dish facing up in SVG (positive Y down), we need vertex at bottom, opening up (-Y).
+        // Let's invert Y axis for physics logic or just map it.
+        // Let's map: Focus at (0, 40). Vertex at (0, 80). Curve opens UP in visual (-Y direction).
+        // Physics: y_visual = 80 - x^2/160. 
+        // Ray tracing must match this.
+        let y_vis = 180 - (x*x)/160; // Vertex at 180. Opening UP.
+        if(x===-100) dDish += `M ${x} ${y_vis}`;
+        else dDish += ` L ${x} ${y_vis}`;
+    }
+    dish.setAttribute('d', dDish);
+    // Focus should be at (0, 180 - 40) = (0, 140).
+    // Let's verify: x^2 = 4py. p=40. Focus is p distance from vertex inside curve.
+    document.querySelector("#svg-antenna circle").setAttribute("cy", 140);
+    document.querySelector("#svg-antenna text").setAttribute("y", 145);
+
+    function animAntenna() {
+        const g = document.getElementById('radio-waves');
+        g.innerHTML = "";
+        
+        // Parallel rays coming from top (infinite Y)
+        for(let x=-90; x<=90; x+=15) {
+            // 1. Ray Down
+            let ray1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ray1.setAttribute("x1", x); ray1.setAttribute("y1", -50);
+            ray1.setAttribute("x2", x); ray1.setAttribute("y2", -50);
+            ray1.setAttribute("stroke", "var(--accent-tertiary)");
+            ray1.setAttribute("stroke-width", "2");
+            g.appendChild(ray1);
+            
+            // Hit point
+            let hitY = 180 - (x*x)/160;
+            
+            // 2. Reflected Ray
+            let ray2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ray2.setAttribute("x1", x); ray2.setAttribute("y1", hitY);
+            ray2.setAttribute("x2", x); ray2.setAttribute("y2", hitY);
+            ray2.setAttribute("stroke", "var(--accent-secondary)");
+            ray2.setAttribute("stroke-width", "2");
+            g.appendChild(ray2);
+
+            // Animate
+            setTimeout(() => {
+                ray1.style.transition = "all 1s linear";
+                ray1.setAttribute("y2", hitY);
+            }, 100);
+
+            setTimeout(() => {
+                ray2.style.transition = "all 1s linear";
+                ray2.setAttribute("x2", 0);
+                ray2.setAttribute("y2", 140); // Focus
+            }, 1100);
+        }
+    }
+
+</script>
+</body>
+</html>
