@@ -1,479 +1,1368 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE LOGIC LOCK: Permutation & Combination</title>
-    <style>
-        :root {
-            --primary: #00ff9d;
-            --primary-dim: #004d33;
-            --accent: #ff0055;
-            --bg: #0a0a0a;
-            --panel: #111;
-            --text: #e0e0e0;
-            --font-mono: 'Courier New', Courier, monospace;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>順列・組み合わせ 謎解き学習ゲーム</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Orbitron:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+:root {
+  --ink: #1a1a2e;
+  --paper: #f5f0e8;
+  --accent: #e63946;
+  --gold: #f4a261;
+  --teal: #2ec4b6;
+  --indigo: #264653;
+  --mist: #e9ecef;
+  --shadow: rgba(26,26,46,0.15);
+}
 
-        /* Scanline effect */
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-        #game-container {
-            width: 90%;
-            max-width: 800px;
-            background: var(--panel);
-            border: 2px solid var(--primary-dim);
-            box-shadow: 0 0 20px var(--primary-dim);
-            padding: 2rem;
-            border-radius: 8px;
-            position: relative;
-            z-index: 10;
-        }
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--primary-dim);
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
-        }
+/* ===== 背景 ===== */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(46,196,182,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(230,57,70,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(244,162,97,0.05) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
 
-        h1 {
-            margin: 0;
-            font-family: var(--font-mono);
-            color: var(--primary);
-            text-shadow: 0 0 5px var(--primary);
-            font-size: 1.5rem;
-        }
+/* ===== タイトル画面 ===== */
+#title-screen {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:2rem;position:relative;z-index:1;
+  animation: fadeIn 0.8s ease;
+}
 
-        .level-indicator {
-            font-family: var(--font-mono);
-            color: var(--primary);
-        }
+@keyframes fadeIn {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeOut {from{opacity:1}to{opacity:0;pointer-events:none}}
+@keyframes slideIn {from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes popIn {from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+@keyframes glow {0%,100%{text-shadow:0 0 20px rgba(46,196,182,0.4)}50%{text-shadow:0 0 40px rgba(46,196,182,0.8),0 0 60px rgba(46,196,182,0.3)}}
+@keyframes float {0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shake {0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes correct-pulse {0%{background:rgba(46,196,182,0)}50%{background:rgba(46,196,182,0.15)}100%{background:rgba(46,196,182,0)}}
+@keyframes wrong-flash {0%{background:rgba(230,57,70,0)}50%{background:rgba(230,57,70,0.15)}100%{background:rgba(230,57,70,0)}}
+@keyframes particle-rise {from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-80px) scale(0)}}
+@keyframes progress-fill {from{width:0}to{width:100%}}
+@keyframes spin-slow {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes counter-spin {from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
 
-        .puzzle-area {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+.game-logo {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1rem,3vw,1.4rem);
+  letter-spacing:0.3em;
+  color:var(--teal);
+  animation:glow 3s ease-in-out infinite;
+  margin-bottom:1rem;
+}
 
-        .story-text {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            text-align: left;
-            background: #1a1a1a;
-            padding: 1.5rem;
-            border-left: 4px solid var(--primary);
-            border-radius: 0 4px 4px 0;
-        }
+.title-main {
+  font-family:'Noto Serif JP',serif;
+  font-size:clamp(2rem,6vw,4rem);
+  font-weight:900;
+  line-height:1.2;
+  text-align:center;
+  margin-bottom:0.5rem;
+}
 
-        .keyword {
-            color: var(--primary);
-            font-weight: bold;
-        }
+.title-main em {
+  font-style:normal;
+  color:var(--gold);
+}
 
-        .input-area {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
+.title-sub {
+  font-size:1rem;
+  color:rgba(245,240,232,0.6);
+  margin-bottom:3rem;
+  text-align:center;
+}
 
-        input[type="number"] {
-            background: #000;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            font-family: var(--font-mono);
-            font-size: 2rem;
-            width: 150px;
-            padding: 0.5rem;
-            text-align: center;
-            border-radius: 4px;
-        }
-        
-        input[type="number"]:focus {
-            outline: none;
-            box-shadow: 0 0 10px var(--primary);
-        }
+/* ===== レベル選択カード ===== */
+.level-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+  width:100%;max-width:960px;
+  margin-bottom:2rem;
+}
 
-        button {
-            background: var(--primary-dim);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 0.5rem 1.5rem;
-            font-family: var(--font-mono);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 4px;
-        }
+.level-card {
+  background:rgba(245,240,232,0.05);
+  border:1px solid rgba(245,240,232,0.1);
+  border-radius:16px;
+  padding:2rem;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  position:relative;
+  overflow:hidden;
+}
 
-        button:hover {
-            background: var(--primary);
-            color: #000;
-            box-shadow: 0 0 15px var(--primary);
-        }
+.level-card::before {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,0.03) 100%);
+  border-radius:16px;
+}
 
-        .hint-btn {
-            background: transparent;
-            border: 1px solid #555;
-            color: #888;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
+.level-card:hover {
+  transform:translateY(-6px);
+  border-color:var(--teal);
+  box-shadow:0 20px 60px var(--shadow),0 0 0 1px rgba(46,196,182,0.3);
+}
 
-        .hint-btn:hover {
-            border-color: #aaa;
-            color: #aaa;
-            background: transparent;
-            box-shadow: none;
-        }
+.level-card:hover .card-icon {animation:float 2s ease-in-out infinite;}
 
-        #message-area {
-            height: 3rem;
-            margin-top: 1rem;
-            font-family: var(--font-mono);
-            font-weight: bold;
-        }
+.level-badge {
+  display:inline-block;
+  font-size:0.7rem;font-weight:700;letter-spacing:0.15em;
+  padding:0.25rem 0.75rem;
+  border-radius:100px;
+  margin-bottom:1rem;
+}
 
-        .success { color: var(--primary); }
-        .error { color: var(--accent); }
+.lv1 .level-badge{background:rgba(46,196,182,0.2);color:var(--teal);}
+.lv2 .level-badge{background:rgba(244,162,97,0.2);color:var(--gold);}
+.lv3 .level-badge{background:rgba(230,57,70,0.2);color:var(--accent);}
 
-        /* Hint Box */
-        #hint-box {
-            display: none;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #222;
-            border: 1px dashed #555;
-            font-size: 0.9rem;
-            color: #ccc;
-            text-align: left;
-        }
+.card-icon {font-size:2.5rem;margin-bottom:1rem;transition:all 0.3s;}
+.card-title {font-family:'Noto Serif JP',serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;}
+.card-desc {font-size:0.85rem;color:rgba(245,240,232,0.6);line-height:1.6;}
 
-        /* Visualization Area */
-        .visualizer {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 1rem 0;
-            height: 50px;
-            align-items: center;
-        }
-        .slot {
-            width: 40px;
-            height: 40px;
-            border: 1px dashed #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: var(--font-mono);
-            color: #555;
-        }
+/* ===== ゲーム画面 ===== */
+#game-screen {
+  display:none;
+  min-height:100vh;
+  padding:1.5rem;
+  position:relative;z-index:1;
+}
 
-        /* Animations */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
+/* ===== ヘッダー ===== */
+.game-header {
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:900px;margin:0 auto 2rem;
+  flex-wrap:wrap;gap:1rem;
+}
 
-        .shake {
-            animation: shake 0.5s;
-        }
+.back-btn {
+  background:none;border:1px solid rgba(245,240,232,0.2);
+  color:rgba(245,240,232,0.7);
+  padding:0.5rem 1rem;border-radius:8px;
+  cursor:pointer;font-family:inherit;font-size:0.85rem;
+  transition:all 0.2s;
+}
+.back-btn:hover{border-color:var(--teal);color:var(--teal);}
 
-        .crt-overlay {
-            animation: flicker 0.15s infinite;
-        }
+.score-display {
+  display:flex;align-items:center;gap:1.5rem;
+}
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
-        }
+.score-item {
+  text-align:center;
+}
+.score-label{font-size:0.65rem;color:rgba(245,240,232,0.4);letter-spacing:0.1em;text-transform:uppercase;}
+.score-value{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;color:var(--gold);}
 
-        .pulse {
-            animation: pulse 1s;
-        }
+.progress-bar-wrap {
+  max-width:900px;margin:0 auto 2rem;
+  background:rgba(245,240,232,0.08);
+  border-radius:100px;height:6px;overflow:hidden;
+}
+.progress-bar-fill {
+  height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));
+  border-radius:100px;transition:width 0.5s ease;
+}
 
-        #progress-bar {
-            width: 0%;
-            height: 4px;
-            background: var(--primary);
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: width 0.5s;
-        }
+/* ===== 問題カード ===== */
+.question-area {
+  max-width:900px;margin:0 auto;
+}
 
-    </style>
+.question-card {
+  background:rgba(245,240,232,0.04);
+  border:1px solid rgba(245,240,232,0.08);
+  border-radius:20px;
+  padding:2.5rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.3s;
+}
+
+.question-card.correct-anim{animation:correct-pulse 0.6s ease;}
+.question-card.wrong-anim{animation:wrong-flash 0.6s ease,shake 0.4s ease;}
+
+.q-tag {
+  display:inline-flex;align-items:center;gap:0.5rem;
+  font-size:0.7rem;font-weight:700;letter-spacing:0.15em;
+  color:var(--teal);
+  margin-bottom:1.5rem;
+}
+.q-tag::before{content:'';width:20px;height:2px;background:var(--teal);}
+
+.q-number {
+  font-family:'Noto Serif JP',serif;
+  font-size:1.6rem;font-weight:700;
+  line-height:1.5;margin-bottom:1.5rem;
+}
+
+/* ===== シナリオ演出 ===== */
+.scenario-box {
+  background:rgba(38,70,83,0.4);
+  border-left:3px solid var(--teal);
+  border-radius:0 12px 12px 0;
+  padding:1.2rem 1.5rem;
+  margin-bottom:1.5rem;
+  font-size:0.95rem;
+  line-height:1.7;
+  color:rgba(245,240,232,0.85);
+}
+
+/* ===== 数式表示 ===== */
+.formula-display {
+  background:rgba(26,26,46,0.6);
+  border:1px solid rgba(46,196,182,0.2);
+  border-radius:12px;
+  padding:1rem 1.5rem;
+  margin:1rem 0;
+  font-family:'Orbitron',monospace;
+  font-size:1.1rem;
+  color:var(--teal);
+  text-align:center;
+  letter-spacing:0.05em;
+}
+
+/* ===== 思考補助パネル ===== */
+.think-panel {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:0.8rem;margin:1.5rem 0;
+}
+
+.think-step {
+  background:rgba(245,240,232,0.04);
+  border:1px solid rgba(245,240,232,0.08);
+  border-radius:12px;
+  padding:1rem;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.25s;
+  user-select:none;
+}
+
+.think-step:hover{border-color:rgba(46,196,182,0.4);background:rgba(46,196,182,0.06);}
+.think-step.selected{border-color:var(--teal);background:rgba(46,196,182,0.12);}
+.think-step.correct{border-color:var(--teal);background:rgba(46,196,182,0.2);color:var(--teal);}
+.think-step.incorrect{border-color:var(--accent);background:rgba(230,57,70,0.12);color:var(--accent);}
+
+.step-icon{font-size:1.5rem;margin-bottom:0.4rem;}
+.step-text{font-size:0.8rem;line-height:1.4;}
+
+/* ===== 入力エリア ===== */
+.answer-area {
+  display:flex;gap:1rem;flex-wrap:wrap;align-items:center;
+  margin-top:1.5rem;
+}
+
+.answer-input {
+  flex:1;min-width:120px;max-width:200px;
+  background:rgba(245,240,232,0.06);
+  border:2px solid rgba(245,240,232,0.15);
+  border-radius:12px;
+  padding:0.8rem 1.2rem;
+  font-family:'Orbitron',monospace;
+  font-size:1.4rem;
+  font-weight:700;
+  color:var(--paper);
+  text-align:center;
+  outline:none;
+  transition:all 0.2s;
+}
+
+.answer-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,196,182,0.1);}
+.answer-input.correct{border-color:var(--teal);background:rgba(46,196,182,0.1);}
+.answer-input.incorrect{border-color:var(--accent);background:rgba(230,57,70,0.1);}
+
+.submit-btn {
+  background:linear-gradient(135deg,var(--teal),#26a69a);
+  border:none;
+  border-radius:12px;
+  padding:0.8rem 2rem;
+  font-family:inherit;font-size:1rem;font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(46,196,182,0.3);}
+.submit-btn:active{transform:translateY(0);}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* ===== 選択肢ボタン型 ===== */
+.choices-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:0.8rem;margin-top:1.5rem;
+}
+
+.choice-btn {
+  background:rgba(245,240,232,0.04);
+  border:2px solid rgba(245,240,232,0.1);
+  border-radius:12px;
+  padding:1rem;
+  font-family:'Orbitron',monospace;
+  font-size:1.2rem;font-weight:700;
+  color:var(--paper);
+  cursor:pointer;
+  transition:all 0.25s;
+}
+.choice-btn:hover{border-color:var(--teal);background:rgba(46,196,182,0.08);transform:translateY(-2px);}
+.choice-btn.selected{border-color:var(--gold);background:rgba(244,162,97,0.1);color:var(--gold);}
+.choice-btn.correct{border-color:var(--teal);background:rgba(46,196,182,0.2);color:var(--teal);pointer-events:none;}
+.choice-btn.incorrect{border-color:var(--accent);background:rgba(230,57,70,0.1);color:var(--accent);pointer-events:none;}
+
+/* ===== ヒントパネル ===== */
+.hint-section {
+  margin-top:1rem;
+}
+
+.hint-toggle {
+  background:none;
+  border:1px solid rgba(244,162,97,0.3);
+  border-radius:8px;
+  padding:0.5rem 1rem;
+  font-family:inherit;font-size:0.8rem;
+  color:var(--gold);
+  cursor:pointer;
+  transition:all 0.2s;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.hint-toggle:hover{background:rgba(244,162,97,0.08);border-color:var(--gold);}
+
+.hint-content {
+  display:none;
+  background:rgba(244,162,97,0.06);
+  border:1px solid rgba(244,162,97,0.15);
+  border-radius:12px;
+  padding:1.2rem 1.5rem;
+  margin-top:0.8rem;
+  font-size:0.9rem;
+  line-height:1.7;
+  color:rgba(245,240,232,0.8);
+}
+.hint-content.open{display:block;animation:slideIn 0.3s ease;}
+.hint-content strong{color:var(--gold);}
+.hint-content .formula{
+  font-family:'Orbitron',monospace;
+  background:rgba(26,26,46,0.5);
+  border-radius:8px;padding:0.5rem 1rem;
+  display:inline-block;margin:0.3rem 0;
+  font-size:0.9rem;color:var(--teal);
+}
+
+/* ===== フィードバック ===== */
+.feedback-panel {
+  display:none;
+  background:rgba(245,240,232,0.04);
+  border-radius:16px;
+  padding:1.5rem 2rem;
+  margin-top:1.5rem;
+  border-left:4px solid var(--teal);
+}
+.feedback-panel.show{display:block;animation:slideIn 0.4s ease;}
+.feedback-panel.wrong{border-color:var(--accent);}
+
+.feedback-title {
+  font-family:'Noto Serif JP',serif;
+  font-size:1.1rem;font-weight:700;
+  margin-bottom:0.8rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.feedback-title.ok{color:var(--teal);}
+.feedback-title.ng{color:var(--accent);}
+
+.explanation {
+  font-size:0.9rem;line-height:1.8;
+  color:rgba(245,240,232,0.8);
+}
+
+.explanation .math-step {
+  background:rgba(26,26,46,0.5);
+  border-radius:8px;
+  padding:0.8rem 1.2rem;
+  margin:0.8rem 0;
+  font-family:'Orbitron',monospace;
+  font-size:0.85rem;
+  color:var(--teal);
+  line-height:1.8;
+}
+
+.next-btn {
+  background:linear-gradient(135deg,var(--gold),#e76f51);
+  border:none;border-radius:12px;
+  padding:0.8rem 2.5rem;
+  font-family:inherit;font-size:1rem;font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  margin-top:1.5rem;
+  transition:all 0.2s;
+}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(244,162,97,0.3);}
+
+/* ===== 結果画面 ===== */
+#result-screen {
+  display:none;
+  min-height:100vh;
+  padding:2rem;
+  position:relative;z-index:1;
+  align-items:center;justify-content:center;flex-direction:column;
+}
+
+.result-card {
+  background:rgba(245,240,232,0.04);
+  border:1px solid rgba(245,240,232,0.1);
+  border-radius:24px;
+  padding:3rem;
+  max-width:600px;width:100%;
+  text-align:center;
+  animation:popIn 0.5s ease;
+}
+
+.result-rank {
+  font-size:4rem;margin-bottom:1rem;
+  animation:float 3s ease-in-out infinite;
+}
+
+.result-title {
+  font-family:'Noto Serif JP',serif;
+  font-size:2rem;font-weight:900;
+  margin-bottom:0.5rem;
+}
+
+.result-score-big {
+  font-family:'Orbitron',monospace;
+  font-size:3rem;font-weight:900;
+  color:var(--gold);
+  margin:1rem 0;
+}
+
+.result-msg {
+  font-size:0.95rem;
+  color:rgba(245,240,232,0.7);
+  line-height:1.7;
+  margin-bottom:2rem;
+}
+
+.result-btns {
+  display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
+}
+
+.retry-btn {
+  background:linear-gradient(135deg,var(--teal),#26a69a);
+  border:none;border-radius:12px;padding:0.8rem 2rem;
+  font-family:inherit;font-size:1rem;font-weight:700;color:var(--ink);
+  cursor:pointer;transition:all 0.2s;
+}
+.retry-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(46,196,182,0.3);}
+
+.home-btn {
+  background:rgba(245,240,232,0.08);
+  border:1px solid rgba(245,240,232,0.15);border-radius:12px;padding:0.8rem 2rem;
+  font-family:inherit;font-size:1rem;font-weight:700;color:var(--paper);
+  cursor:pointer;transition:all 0.2s;
+}
+.home-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* ===== パーティクル ===== */
+.particle {
+  position:fixed;pointer-events:none;
+  font-size:1.5rem;
+  animation:particle-rise 1.5s ease forwards;
+  z-index:1000;
+}
+
+/* ===== アコーディオン（数式説明） ===== */
+.formula-accordion {
+  background:rgba(38,70,83,0.3);
+  border:1px solid rgba(46,196,182,0.15);
+  border-radius:12px;
+  margin:1rem 0;
+  overflow:hidden;
+}
+.fa-header {
+  padding:1rem 1.5rem;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.9rem;font-weight:700;
+  transition:background 0.2s;
+}
+.fa-header:hover{background:rgba(46,196,182,0.08);}
+.fa-body {
+  display:none;padding:1rem 1.5rem;
+  font-size:0.85rem;line-height:1.8;
+  color:rgba(245,240,232,0.75);
+  border-top:1px solid rgba(46,196,182,0.1);
+}
+.fa-body.open{display:block;}
+
+/* ===== カウンター演出（階乗用） ===== */
+.factorial-visual {
+  display:flex;flex-wrap:wrap;gap:0.5rem;
+  align-items:center;justify-content:center;
+  margin:1rem 0;
+}
+.f-num {
+  width:40px;height:40px;
+  background:rgba(244,162,97,0.1);
+  border:2px solid rgba(244,162,97,0.3);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;
+  color:var(--gold);
+  transition:all 0.3s;
+}
+.f-num.lit{background:rgba(244,162,97,0.25);border-color:var(--gold);box-shadow:0 0 15px rgba(244,162,97,0.3);}
+.f-times{color:rgba(245,240,232,0.4);font-size:1.2rem;}
+
+/* ===== 問題番号バッジ ===== */
+.q-badge {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--teal),#26a69a);
+  border-radius:50%;
+  font-family:'Orbitron',monospace;
+  font-size:0.8rem;font-weight:700;
+  color:var(--ink);
+  flex-shrink:0;
+}
+
+/* ===== ドラッグ式順序選択 ===== */
+.drag-area {
+  margin:1.5rem 0;
+}
+.drag-label{font-size:0.8rem;color:rgba(245,240,232,0.5);margin-bottom:0.8rem;letter-spacing:0.05em;}
+
+.item-pool, .answer-slots {
+  display:flex;flex-wrap:wrap;gap:0.6rem;min-height:60px;
+  padding:0.8rem;
+  border-radius:12px;
+}
+.item-pool{background:rgba(245,240,232,0.04);border:2px dashed rgba(245,240,232,0.12);}
+.answer-slots{background:rgba(46,196,182,0.04);border:2px dashed rgba(46,196,182,0.2);}
+
+.drag-item {
+  background:rgba(245,240,232,0.08);
+  border:2px solid rgba(245,240,232,0.15);
+  border-radius:10px;
+  padding:0.5rem 1rem;
+  cursor:pointer;
+  font-weight:700;
+  font-size:0.95rem;
+  transition:all 0.2s;
+  user-select:none;
+}
+.drag-item:hover{border-color:var(--teal);background:rgba(46,196,182,0.1);transform:translateY(-2px);}
+.drag-item.placed{background:rgba(46,196,182,0.1);border-color:var(--teal);color:var(--teal);}
+
+.slot-placeholder{
+  color:rgba(245,240,232,0.25);font-size:0.8rem;align-self:center;width:100%;text-align:center;
+}
+
+/* ===== インタラクティブな確率ツリー ===== */
+.tree-container {
+  overflow-x:auto;margin:1rem 0;
+}
+
+/* ===== responsive ===== */
+@media(max-width:600px){
+  .question-card{padding:1.5rem;}
+  .q-number{font-size:1.2rem;}
+  .think-panel{grid-template-columns:1fr 1fr;}
+  .result-card{padding:2rem 1.5rem;}
+  .result-score-big{font-size:2rem;}
+}
+</style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="progress-bar"></div>
-        <header>
-            <h1>LOGIC LOCK <span style="font-size:0.5em; vertical-align:middle;">v1.0</span></h1>
-            <div class="level-indicator">SECURITY LEVEL: <span id="level-num">1</span>/5</div>
-        </header>
+<!-- ============================================================
+     タイトル画面
+     ============================================================ -->
+<div id="title-screen">
+  <div class="game-logo">MATH PUZZLE ACADEMY</div>
+  <h1 class="title-main">
+    <em>順列・組み合わせ</em><br>謎解きチャレンジ
+  </h1>
+  <p class="title-sub">理屈から解く — 推測では正解できない 本物の論理問題</p>
 
-        <div class="puzzle-area">
-            <div id="story" class="story-text">
-                </div>
-
-            <div class="visualizer" id="visualizer">
-                </div>
-
-            <div class="input-area">
-                <input type="number" id="answer-input" placeholder="CODE" autocomplete="off">
-                <button onclick="checkAnswer()">UNLOCK</button>
-            </div>
-            
-            <div id="message-area"></div>
-            
-            <button class="hint-btn" onclick="toggleHint()">REQUEST LOGIC ASSISTANCE</button>
-            <div id="hint-box"></div>
-        </div>
+  <div class="level-grid">
+    <div class="level-card lv1" onclick="startGame(1)">
+      <div class="level-badge">LEVEL 1 ― 入門</div>
+      <div class="card-icon">🎲</div>
+      <div class="card-title">階乗の感覚を掴め</div>
+      <div class="card-desc">n! の意味とは何か。<br>「並べる」ことの本質を体感する5問。<br>中学生〜高校1年向け</div>
     </div>
+    <div class="level-card lv2" onclick="startGame(2)">
+      <div class="level-badge">LEVEL 2 ― 標準</div>
+      <div class="card-icon">🔐</div>
+      <div class="card-title">順列で謎を解け</div>
+      <div class="card-desc">n個からr個を選んで並べる順列 P。<br>「順序がある」場面を見極める6問。<br>高校1〜2年向け</div>
+    </div>
+    <div class="level-card lv3" onclick="startGame(3)">
+      <div class="level-badge">LEVEL 3 ― 上級</div>
+      <div class="card-icon">💎</div>
+      <div class="card-title">組み合わせの真髄</div>
+      <div class="card-desc">順列と組み合わせを使い分ける。<br>「なぜ割るのか」を理解する7問。<br>高校2〜3年向け</div>
+    </div>
+  </div>
 
-    <script>
-        // Game Data
-        const levels = [
-            {
-                id: 1,
-                title: "Energy Core Alignment",
-                story: "原子炉の制御棒が<span class='keyword'>5本</span>ある（A, B, C, D, E）。これらをスロットに１列に挿入しなければならない。<br>順番が異なればエネルギー出力が変わるため、全ての配置パターンをシミュレーションする必要がある。<br><br>考えられる配置の総数はいくつか？",
-                logic: "factorial",
-                n: 5,
-                r: 5,
-                answer: 120,
-                hint1: "5本すべてを使って、1列に並べる並べ方です。",
-                hint2: "最初のスロットには5通りの選択肢、次は4通り...と減っていきます。<br>数式: 5!",
-                visual: ["A", "B", "C", "D", "E"]
-            },
-            {
-                id: 2,
-                title: "Passcode Decryption",
-                story: "敵のアジトの電子ロックを解除する。キーパッドには0〜9の数字がある。<br>スパイ情報によると、パスコードは<span class='keyword'>異なる4つの数字</span>の並びである（例: 1234 と 4321 は別物）。<br><br>総当たり攻撃を行うための、最大試行回数は？",
-                logic: "permutation",
-                n: 10,
-                r: 4,
-                answer: 5040,
-                hint1: "10個の数字から4個を選んで、並べる順番も区別します。<br>「選んで、並べる」＝ 順列 (Permutation)",
-                hint2: "数式: <sub>10</sub>P<sub>4</sub><br>1桁目は10通り、2桁目は9通り...",
-                visual: ["?", "?", "?", "?"]
-            },
-            {
-                id: 3,
-                title: "Server Node Selection",
-                story: "ウイルス対策のために、稼働中の<span class='keyword'>8台</span>のサーバーから、メンテナンスする<span class='keyword'>3台</span>を選び出して隔離する必要がある。<br>選ぶ順番は関係なく、どの3台の組み合わせであるかだけが重要だ。<br><br>可能なサーバーの組み合わせは何通りあるか？",
-                logic: "combination",
-                n: 8,
-                r: 3,
-                answer: 56,
-                hint1: "順番は関係ありません。「ABC」を選んでも「CBA」を選んでも、隔離されるチームは同じです。",
-                hint2: "順列(<sub>8</sub>P<sub>3</sub>)から、選んだ3台の並び順の重複(3!)を割り算して消去します。<br>数式: <sub>8</sub>C<sub>3</sub>",
-                visual: ["Server", "Server", "Server"]
-            },
-            {
-                id: 4,
-                title: "The VIP Seating Protocol",
-                story: "円卓会議での交渉。6人の代表者（A〜F）が円形のテーブルに座る。<br>ただし、回転して重なる並びは「同じ席順」とみなされる。<br><br>座り方は全部で何通りあるか？",
-                logic: "circular",
-                n: 6,
-                r: 6,
-                answer: 120,
-                hint1: "円順列です。1人を固定して考えると、残りの人たちの順列になります。",
-                hint2: "公式: (n-1)!<br>6人のうちAさんを固定すると、残り5人の並び方を考えればよいことになります。",
-                visual: ["○", "○", "○", "○", "○", "○"]
-            },
-            {
-                id: 5,
-                title: "Final Security Override",
-                story: "最終防壁。<span class='keyword'>7本</span>のケーブル（赤、青、黄、緑、白、黒、紫）を一列に配線する。<br>ただし、<span class='keyword'>「赤」と「青」は必ず隣り合わせ</span>にしなければ回路が繋がらない。<br><br>有効な配線パターンは何通りか？",
-                logic: "restriction",
-                n: 7,
-                r: 7,
-                answer: 1440,
-                hint1: "「赤と青」を縛って『1つのセット』とみなします。すると全体は何個の並び替えになりますか？",
-                hint2: "1. (赤青)セット＋残り5本 ＝ 計6個のモノの順列 (6!)<br>2. その後、セットの中での(赤青)と(青赤)の入れ替え (2!) を掛け合わせます。<br>式: 6! × 2!",
-                visual: ["(RB)", "Y", "G", "W", "B", "P"]
-            }
-        ];
+  <p style="font-size:0.75rem;color:rgba(245,240,232,0.3);">※ すべての問題は論理的な理解なしには解けません</p>
+</div>
 
-        let currentLevelIndex = 0;
-        let isSolved = false;
+<!-- ============================================================
+     ゲーム画面
+     ============================================================ -->
+<div id="game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">← ホームへ</button>
+    <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:1rem;" id="level-label"></div>
+    <div class="score-display">
+      <div class="score-item">
+        <div class="score-label">スコア</div>
+        <div class="score-value" id="score-disp">0</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">正解</div>
+        <div class="score-value" id="correct-disp" style="color:var(--teal)">0</div>
+      </div>
+    </div>
+  </div>
 
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLevel(currentLevelIndex);
-        });
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
 
-        function loadLevel(index) {
-            if (index >= levels.length) {
-                gameClear();
-                return;
-            }
+  <div class="question-area" id="question-area"></div>
+</div>
 
-            const level = levels[index];
-            isSolved = false;
+<!-- ============================================================
+     結果画面
+     ============================================================ -->
+<div id="result-screen" style="display:none;">
+  <div class="result-card" id="result-card"></div>
+</div>
 
-            // UI Update
-            document.getElementById('level-num').innerText = index + 1;
-            document.getElementById('story').innerHTML = `<h3>${level.title}</h3>${level.story}`;
-            document.getElementById('answer-input').value = '';
-            document.getElementById('message-area').innerText = '';
-            document.getElementById('message-area').className = '';
-            document.getElementById('hint-box').style.display = 'none';
-            document.getElementById('hint-box').innerHTML = `<strong>HINT LEVEL 1:</strong><br>${level.hint1}<br><br><button class="hint-btn" onclick="showSecondHint()">SHOW FORMULA</button>`;
-            
-            // Progress Bar
-            const progress = (index / levels.length) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
+<script>
+/* ============================================================
+   問題データベース
+   ============================================================ */
 
-            // Visualizer update (abstract)
-            const viz = document.getElementById('visualizer');
-            viz.innerHTML = '';
-            level.visual.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'slot';
-                div.innerText = item;
-                viz.appendChild(div);
-            });
-        }
+const QUESTIONS = {
 
-        function showSecondHint() {
-            const level = levels[currentLevelIndex];
-            document.getElementById('hint-box').innerHTML = `
-                <strong>HINT LEVEL 1:</strong><br>${level.hint1}<br><hr>
-                <strong>HINT LEVEL 2 (FORMULA):</strong><br>${level.hint2}
-            `;
-        }
+/* ===== LEVEL 1: 階乗 ===== */
+1: [
+  {
+    type: 'number-input',
+    tag: '階乗の意味',
+    scenario: '🎭 演劇部の3人（田中・鈴木・佐藤）が一列に並んで舞台に立ちます。並び方は何通りあるでしょうか？',
+    question: '3人を1列に並べる方法は何通りあるか答えよ。',
+    hint: `<strong>考え方：順番に「選ぶ」</strong><br>
+      まず左端に立つ人を考えてみよう。<br>
+      左端：3人から1人選ぶ → <span class="formula">3通り</span><br>
+      真ん中：残り2人から1人選ぶ → <span class="formula">2通り</span><br>
+      右端：残り1人 → <span class="formula">1通り</span><br>
+      積の法則で <span class="formula">3 × 2 × 1 = 3!</span>`,
+    factorial: 3,
+    explanation: `「左端に誰を置くか」から考える。<br>
+      <div class="math-step">左端の選び方：3通り<br>真ん中の選び方：残り2人から → 2通り<br>右端の選び方：残り1人 → 1通り<br><br>積の法則：3 × 2 × 1 = <strong>6通り</strong></div>
+      これが <strong>3! = 6</strong> の意味。n個を並べるとき、最初はn通り、次はn-1通り…と減っていく。`,
+    answer: 6,
+    points: 100,
+  },
+  {
+    type: 'number-input',
+    tag: '階乗を計算する',
+    scenario: '📚 5冊の本を本棚に並べます。並べ方は何通りあるでしょう？',
+    question: '5! の値を求めよ。',
+    hint: `<strong>5! の展開</strong><br>
+      <span class="formula">5! = 5 × 4 × 3 × 2 × 1</span><br>
+      順番に計算：5×4=20、20×3=60、60×2=120、120×1=120`,
+    explanation: `
+      <div class="math-step">5! = 5 × 4 × 3 × 2 × 1<br>　　= 20 × 3 × 2 × 1<br>　　= 60 × 2 × 1<br>　　= 120 × 1<br>　　= <strong>120</strong></div>
+      5冊の本の並べ方は120通り。階乗は数が増えると急激に大きくなる。`,
+    answer: 120,
+    points: 100,
+  },
+  {
+    type: 'choice',
+    tag: '0! の謎',
+    scenario: '🤔 「0個のものを並べる方法は何通りか」という奇妙な問いがあります。直感ではわからないこの問いに、数学はどう答えるでしょうか？',
+    question: '0! の値はいくつか？理由も考えよ。',
+    choices: [0, 1, 2, '∞'],
+    hint: `<strong>「何もしない」のも1通り</strong><br>
+      何も並べない、という「空の並べ方」はただ1通り存在する。<br>
+      また、数式的には <span class="formula">n! = n × (n-1)!</span> より<br>
+      <span class="formula">1! = 1 × 0!</span> → <span class="formula">0! = 1</span>`,
+    explanation: `0! = 1 である理由は2つある。<br>
+      <div class="math-step">理由①（直感）：「何も並べない」というやり方は、ちょうど1通りだけ存在する。<br><br>
+      理由②（数式の一貫性）：<br>
+      　n! = n × (n-1)! という規則を使うと<br>
+      　1! = 1 × 0! → 1 = 1 × 0! → 0! = 1</div>
+      0! = 1 は「定義」ではなく、<strong>全体が矛盾なく成り立つために必然的に決まる値</strong>。`,
+    answer: 1,
+    points: 150,
+  },
+  {
+    type: 'number-input',
+    tag: '組み合わせと階乗',
+    scenario: '👥 A・B・C・D・Eの5人の委員がいます。議長・副議長・書記の役職をそれぞれ1人ずつ決めます（同じ人が複数の役職に就くことはできません）。',
+    question: '役職の決め方は何通りあるか。',
+    hint: `<strong>「役職」があるので順序が重要</strong><br>
+      議長の選び方：5通り<br>副議長の選び方：残り4人から → 4通り<br>書記の選び方：残り3人から → 3通り<br>
+      <span class="formula">5 × 4 × 3 = ?</span><br>
+      ※ これは 5P3 = 5!/2! でもある`,
+    explanation: `役職が異なるので<strong>順序（誰がどの役職か）が重要</strong>。
+      <div class="math-step">議長の選び方：5通り<br>副議長（議長以外）：4通り<br>書記（議長・副議長以外）：3通り<br><br>
+      積の法則：5 × 4 × 3 = <strong>60通り</strong></div>
+      式で書くと <strong>₅P₃ = 60</strong>。次のレベルでこの記号を学ぼう。`,
+    answer: 60,
+    points: 120,
+  },
+  {
+    type: 'classify',
+    tag: '「順序あり」か「順序なし」か',
+    scenario: '同じ数（3個）を選ぶ場面でも、「順序があるかどうか」で答えが変わります。以下の2つを正しく分類せよ。',
+    question: '次の2つはどちらが「順序あり（答えが大きくなる）」か？',
+    itemA: '🏅 A・B・C・D・Eから金・銀・銅メダリストを選ぶ',
+    itemB: '🎁 A・B・C・D・Eからプレゼントをもらう3人を選ぶ',
+    hint: `<strong>キーワードは「区別できるか」</strong><br>
+      メダル：金と銀は違う → 同じ3人でも<strong>順序が違えば別の結果</strong><br>
+      プレゼント：全員同じプレゼント → 誰を選ぶかだけが重要`,
+    explanation: `
+      <div class="math-step">A:メダル → 順序あり<br>　金=A,銀=B,銅=C と 金=B,銀=A,銅=C は<strong>別の結果</strong><br>　→ 5P3 = 60通り<br><br>
+      B:プレゼント → 順序なし<br>　{A,B,C} が選ばれれば誰が最初でも同じ<br>　→ 5C3 = 10通り</div>
+      「選んだ後に区別（順位・役割など）があるか？」が判断基準。`,
+    answerA: 'ordered',
+    answerB: 'unordered',
+    points: 150,
+  },
+],
 
-        function toggleHint() {
-            const box = document.getElementById('hint-box');
-            if (box.style.display === 'block') {
-                box.style.display = 'none';
-            } else {
-                box.style.display = 'block';
-            }
-        }
+/* ===== LEVEL 2: 順列 ===== */
+2: [
+  {
+    type: 'number-input',
+    tag: '順列 nPr の公式',
+    scenario: '🔢 アルファベット A, B, C, D, E の5文字から3文字を選んで並べると、どれだけの「文字列」が作れるか？（ABCとBCAは別の文字列として数える）',
+    question: '₅P₃ の値を求めよ。',
+    formula: '₅P₃ = 5! / (5-3)! = 5! / 2!',
+    hint: `<strong>順列の公式：nPr = n! / (n-r)!</strong><br>
+      <span class="formula">₅P₃ = 5! / (5-3)! = 5! / 2!</span><br>
+      5! = 120、2! = 2<br>
+      <span class="formula">120 / 2 = ?</span><br><br>
+      別の考え方：1文字目×2文字目×3文字目<br>
+      <span class="formula">5 × 4 × 3 = ?</span>`,
+    explanation: `
+      <div class="math-step">₅P₃ = 5 × 4 × 3<br>　（5文字目から順に「残りから1つ選ぶ」）<br><br>
+      または公式で：<br>
+      ₅P₃ = 5! / (5-3)! = 120 / 2 = <strong>60</strong></div>
+      公式の意味：5! は5文字全部を並べた数。(5-3)!=2! は<strong>「選ばなかった残り2文字の並べ方」を除く</strong>ため割る。`,
+    answer: 60,
+    points: 100,
+  },
+  {
+    type: 'number-input',
+    tag: '暗証番号の謎',
+    scenario: '🔐 0〜9の10個の数字から4つを選んで並べ、重複なしの4桁暗証番号を作ります。ハッカーが全パターンを試すと何回試みる必要があるか？',
+    question: '重複なしで10個の数字から4桁を作る並べ方は何通りか。',
+    hint: `<strong>₁₀P₄ を計算する</strong><br>
+      <span class="formula">₁₀P₄ = 10 × 9 × 8 × 7</span><br>
+      1桁目：10通り<br>
+      2桁目：使った1つを除いて9通り<br>
+      3桁目：8通り、4桁目：7通り`,
+    explanation: `
+      <div class="math-step">₁₀P₄ = 10 × 9 × 8 × 7<br>　　　= 90 × 56<br>　　　= <strong>5040通り</strong></div>
+      5040通り＝1秒に1回試すと5040秒（約84分）かかる。<br>
+      重複ありなら10⁴=10000通り。<strong>重複なしでも意外と多い</strong>ことがわかる。`,
+    answer: 5040,
+    points: 120,
+  },
+  {
+    type: 'number-input',
+    tag: '円順列',
+    scenario: '🍽️ 6人が円形テーブルに座ります。「隣の人との関係性」だけが重要で、どこが「上座」かは関係ありません。座り方は何通りありますか？',
+    question: '6人の円順列の場合の数を求めよ。',
+    hint: `<strong>円順列の考え方</strong><br>
+      1人を「基準点」として固定する。<br>
+      なぜなら、全員が1つずつ右にずれても「同じ並び」とみなすから。<br>
+      残りの5人を並べる：<span class="formula">5! = ?</span><br>
+      つまり円順列 = <span class="formula">(n-1)!</span>`,
+    explanation: `
+      <div class="math-step">通常の順列：6! = 720<br>しかし円では「回転しても同じ配置」は同一と数える<br><br>
+      1人を固定すると、残り5人を並べるだけ：<br>
+      (6-1)! = 5! = <strong>120通り</strong></div>
+      <strong>なぜ (n-1)! か：</strong> n個の並べ方はn!通りあるが、円では「n通りの回転」が全て同じ配置になる。よって n!/n = (n-1)!。`,
+    answer: 120,
+    points: 150,
+  },
+  {
+    type: 'number-input',
+    tag: '条件付き順列',
+    scenario: '📚 数学の本3冊、英語の本2冊、理科の本2冊、合計7冊を本棚に並べます。<strong>同じ教科の本は必ず隣り合うように</strong>並べる方法は何通りか？',
+    question: '各教科の本をひとまとめにして並べる方法の総数を求めよ。',
+    hint: `<strong>「まとめて動かす」技</strong><br>
+      3教科のかたまりを1つの「ブロック」とみなす。<br>
+      ブロックの並べ方：<span class="formula">3! = 6通り</span><br>
+      数学の本の並べ方（内部）：<span class="formula">3! = 6通り</span><br>
+      英語の本の内部：<span class="formula">2! = 2通り</span><br>
+      理科の本の内部：<span class="formula">2! = 2通り</span><br>
+      全部かけ合わせる！`,
+    explanation: `
+      <div class="math-step">まず3教科のブロックを並べる：3! = 6通り<br>次にブロック内の並べ方：<br>
+      　数学3冊の内部：3! = 6通り<br>
+      　英語2冊の内部：2! = 2通り<br>
+      　理科2冊の内部：2! = 2通り<br><br>
+      積の法則：6 × 6 × 2 × 2 = <strong>144通り</strong></div>
+      「まとめてブロック化 → ブロックの順列 × 内部の順列」が条件付き順列の鉄則。`,
+    answer: 144,
+    points: 180,
+  },
+  {
+    type: 'number-input',
+    tag: '最短経路の数え方',
+    scenario: '🗺️ 右に4マス、上に3マス移動してゴールに着く格子状の地図があります。最短経路（回り道なし）で進む方法は何通りあるか？',
+    question: '右に4回、上に3回の移動を並べる順列を求めよ。',
+    hint: `<strong>「移動の順番を決める」問題</strong><br>
+      最短経路は必ず「右(R)4回 + 上(U)3回」の計7手。<br>
+      例：RRRUURRR → RRURURRR など<br>
+      7手の中でどの3手を「上」にするかを決めれば良い。<br>
+      <span class="formula">₇P₃ / 3! = ₇C₃</span> ← これが組み合わせ！<br>
+      または <span class="formula">7! / (4! × 3!)</span> で求まる。`,
+    explanation: `
+      <div class="math-step">7手（R,R,R,R,U,U,U）の並べ方：<br>
+      7! = 5040<br>
+      だが R同士・U同士は区別しない（同じ移動）<br>
+      重複する並べ方：4! × 3! = 24 × 6 = 144<br><br>
+      7! / (4! × 3!) = 5040 / 144 = <strong>35通り</strong></div>
+      これは ₇C₃ = 35 と一致する。最短経路問題と組み合わせは深くつながっている。`,
+    answer: 35,
+    points: 200,
+  },
+  {
+    type: 'number-input',
+    tag: '同じ文字を含む順列',
+    scenario: '🔤 "BANANA" という6文字を並べ替えてできる文字列は何通りあるか？（全て異なる文字列として数える）',
+    question: '"BANANA" の文字を並べ替えてできる異なる文字列の数を求めよ。',
+    hint: `<strong>重複する文字に注意！</strong><br>
+      BANANA: B×1, A×3, N×2<br>
+      もし全て異なる文字なら 6! = 720通り<br>
+      しかし A3枚は区別できないので 3! で割る<br>
+      N2枚も区別できないので 2! で割る<br>
+      <span class="formula">6! / (3! × 2!) = ?</span>`,
+    explanation: `
+      <div class="math-step">6文字の全並べ方：6! = 720<br>
+      Aを3枚入れ替えても同じ → ÷3! = ÷6<br>
+      Nを2枚入れ替えても同じ → ÷2! = ÷2<br><br>
+      6! / (3! × 2!) = 720 / (6 × 2) = 720 / 12 = <strong>60通り</strong></div>
+      「同じ文字を含む順列」では、重複する文字の階乗で割ることで、同じ文字が入れ替わって生まれる「見た目が同じ並び」を除く。`,
+    answer: 60,
+    points: 180,
+  },
+],
 
-        function checkAnswer() {
-            if (isSolved) return;
+/* ===== LEVEL 3: 組み合わせ ===== */
+3: [
+  {
+    type: 'choice',
+    tag: '順列か組み合わせか',
+    scenario: '🧠 次の問題を見て、<strong>組み合わせ（nCr）</strong>を使うべきものを選べ。',
+    question: '以下のうち、組み合わせ（順序を無視する）で求めるべき問題はどれか？',
+    choices: [
+      'A〜Fの6チームがリーグ戦で試合する。試合数は何試合？',
+      '6人から会長・副会長・書記を選ぶ方法は？',
+      '6人が横一列に並ぶ方法は？',
+      '6文字から4文字を並べる方法は？'
+    ],
+    hint: `<strong>「選んだ後に区別があるか」を確認</strong><br>
+      リーグ戦：AチームvsB = BチームvsA → <strong>順序なし！</strong><br>
+      役職選び：会長と副会長は違う → 順序あり<br>
+      一列の並び：並ぶ位置が違う → 順序あり<br>
+      4文字の並べ方：ABCDとBACDは違う → 順序あり`,
+    explanation: `
+      <div class="math-step">リーグ戦の試合数 = 6C2<br>　A-B, A-C, A-D, A-E, A-F（5試合）<br>　B-C, B-D, B-E, B-F（4試合）…と数えても良い<br>
+      6C2 = 15試合<br><br>
+      他の3つはすべて「選んだ後に順序・位置・役割の区別」がある → 順列</div>
+      <strong>組み合わせ判定のコツ：「AがいてBがいる」と「BがいてAがいる」が同じかどうか。</strong>`,
+    answer: 'A〜Fの6チームがリーグ戦で試合する。試合数は何試合？',
+    points: 150,
+  },
+  {
+    type: 'number-input',
+    tag: '組み合わせの公式',
+    scenario: '🃏 52枚のトランプから5枚を選ぶ手の数。まずは小さいケースで練習。10枚のカードから3枚を選ぶ組み合わせは何通りか？',
+    question: '₁₀C₃ を求めよ。',
+    formula: '₁₀C₃ = 10! / (3! × 7!) = ₁₀P₃ / 3!',
+    hint: `<strong>組み合わせの公式：nCr = nPr / r!</strong><br>
+      なぜ r! で割るか：<br>
+      同じ3枚を選んでも「並べ方（順列）」の数だけ重複している。<br>
+      3枚の並べ方：3! = 6通り<br>
+      <span class="formula">₁₀P₃ = 10×9×8 = 720</span><br>
+      <span class="formula">₁₀C₃ = 720 / 6 = ?</span>`,
+    explanation: `
+      <div class="math-step">まず順列で選ぶ：₁₀P₃ = 10 × 9 × 8 = 720<br>
+      しかし {A,B,C} を選んだとき<br>
+      ABC, ACB, BAC, BCA, CAB, CBA の6通りは全て「同じ組」<br>
+      → 3! = 6で割る<br><br>
+      ₁₀C₃ = 720 / 6 = <strong>120通り</strong></div>
+      <strong>nCr = nPr / r! の意味：</strong> 順列で数えたあと、「同じ組み合わせを重複して数えた r! 通り」を除くために割る。`,
+    answer: 120,
+    points: 100,
+  },
+  {
+    type: 'number-input',
+    tag: '組み合わせの性質',
+    scenario: '✨ 組み合わせには美しい対称性があります。10人から7人を選ぶことは、10人から何人を「選ばない」かを決めることと同じです。',
+    question: '₁₀C₇ の値を、なるべく楽に計算せよ。',
+    hint: `<strong>対称性：nCr = nC(n-r)</strong><br>
+      10人から7人を選ぶ = 10人から<strong>残りの3人を選ばない</strong>を決める<br>
+      どちらも同じ結果 → <span class="formula">₁₀C₇ = ₁₀C₃</span><br>
+      ₁₀C₃ = 10×9×8 / (3×2×1) = ?`,
+    explanation: `
+      <div class="math-step">₁₀C₇ = ₁₀C₍₁₀₋₇₎ = ₁₀C₃<br>　（10人から7人選ぶ = 除く3人を選ぶ）<br><br>
+      ₁₀C₃ = (10 × 9 × 8) / (3 × 2 × 1)<br>　　　= 720 / 6<br>　　　= <strong>120</strong></div>
+      「大きいrよりも小さい方（n-r）で計算する」習慣をつけると、計算が圧倒的に楽になる。これが <strong>nCr = nC(n-r)</strong> の真の使い道。`,
+    answer: 120,
+    points: 120,
+  },
+  {
+    type: 'number-input',
+    tag: '組み合わせを使う場面',
+    scenario: '🍕 ピザ屋に12種類のトッピングがあります。そのうち4種類を選ぶとき、何通りの組み合わせがあるか？（選ぶ順序は関係ない）',
+    question: '₁₂C₄ の値を求めよ。',
+    hint: `<strong>₁₂C₄ の計算</strong><br>
+      <span class="formula">₁₂C₄ = (12 × 11 × 10 × 9) / (4 × 3 × 2 × 1)</span><br>
+      分子：12×11×10×9 = ?<br>
+      分母：4! = 24<br>
+      計算のコツ：先に約分できる数を探そう`,
+    explanation: `
+      <div class="math-step">₁₂C₄ = (12 × 11 × 10 × 9) / (4!)<br>
+      分子：12×11 = 132、132×10 = 1320、1320×9 = 11880<br>
+      分母：4! = 24<br>
+      11880 / 24 = <strong>495通り</strong><br><br>
+      【計算のコツ】先に約分：12/4=3, 10/2=5<br>
+      → 3 × 11 × 5 × 9 = 1485… ← 間違え！<br>
+      正しくは: (12×11×10×9)/(4×3×2×1) = 495</div>
+      約分は<strong>全体の分子と分母で行う</strong>こと。途中で部分的に約分すると誤りが生じやすい。`,
+    answer: 495,
+    points: 120,
+  },
+  {
+    type: 'number-input',
+    tag: '順列 vs 組み合わせ',
+    scenario: '🏫 クラスの20人から委員を選びます。<strong>クラス委員（2人、順序なし）</strong>の選び方と、<strong>委員長・副委員長（順序あり）</strong>の選び方はどれだけ違うか？その比は何倍か？',
+    question: '₂₀P₂ ÷ ₂₀C₂ を求めよ。（整数で答えよ）',
+    hint: `<strong>なぜ比をとるのか</strong><br>
+      ₂₀P₂ = 20 × 19<br>
+      ₂₀C₂ = 20 × 19 / 2!<br>
+      ÷ すると…<br>
+      <span class="formula">₂₀P₂ / ₂₀C₂ = r! = ?</span><br>
+      ここで r = 2`,
+    explanation: `
+      <div class="math-step">₂₀P₂ = 20 × 19 = 380<br>
+      ₂₀C₂ = 20 × 19 / 2! = 380 / 2 = 190<br><br>
+      ₂₀P₂ ÷ ₂₀C₂ = 380 / 190 = <strong>2</strong></div>
+      一般に <strong>nPr / nCr = r!</strong> が成り立つ。<br>
+      これは「組み合わせで選んだ後、r人を並べる方法（r!通り）をかけると順列になる」ことを意味する。<br>
+      <strong>組み合わせ × 並べ方 = 順列</strong> という関係が核心。`,
+    answer: 2,
+    points: 150,
+  },
+  {
+    type: 'number-input',
+    tag: '重複組み合わせ・二項定理',
+    scenario: '🔢 (a+b)³ を展開したとき、a²b の係数は何か？これは「a,a,b をどう並べるか」という組み合わせの問題と同じです。',
+    question: '(a+b)³ の展開式で a²b の係数を求めよ。',
+    hint: `<strong>二項定理と組み合わせの関係</strong><br>
+      (a+b)³ = (a+b)(a+b)(a+b)<br>
+      3つの括弧から1つずつ選んで積を作る。<br>
+      a²b を作るには：aを2個・bを1個選ぶ<br>
+      3つの括弧のうち、<strong>どの括弧からbを選ぶか</strong>を決める<br>
+      → <span class="formula">₃C₁ = 3</span>`,
+    explanation: `
+      <div class="math-step">(a+b)³ = (a+b)(a+b)(a+b)<br>
+      3つの括弧から「bを選ぶ括弧」を1つ決める：₃C₁ = 3通り<br>
+      残り2つからは自動的にaが選ばれる：₂C₀ = 1通り<br><br>
+      よって a²b の係数 = ₃C₁ = <strong>3</strong><br><br>
+      二項定理：(a+b)ⁿ のaⁿ⁻ʳbʳの係数 = ₙCᵣ</div>
+      二項定理 (a+b)ⁿ = Σ nCk × aⁿ⁻ᵏ × bᵏ の係数は、まさに組み合わせで決まる。これがパスカルの三角形の正体。`,
+    answer: 3,
+    points: 200,
+  },
+  {
+    type: 'number-input',
+    tag: '最終問題：なぜ割るのか',
+    scenario: '🏆 最終問題。8人の生徒を「4人のグループA」と「4人のグループB」に分ける方法は何通りか？さらに「グループ名がない（区別のない）4人+4人への分け方」は何通りか？',
+    question: 'グループ名なしで8人を4人+4人に分ける場合の数を求めよ。',
+    hint: `<strong>「区別のある分け方」から「区別のない分け方」へ</strong><br>
+      グループA・Bと名前がある場合：₈C₄ = 70通り<br>
+      しかし「A={1,2,3,4} B={5,6,7,8}」と<br>
+      「A={5,6,7,8} B={1,2,3,4}」は同じ分け方<br>
+      → 2通りで1セットなので ÷2<br>
+      <span class="formula">₈C₄ / 2 = ?</span>`,
+    explanation: `
+      <div class="math-step">まず「グループに名前がある」場合：<br>
+      ₈C₄ = (8×7×6×5)/(4×3×2×1) = 70通り<br><br>
+      しかしグループ名がない場合：<br>
+      {1,2,3,4} と {5,6,7,8} の分け方は<br>
+      「{5,6,7,8} と {1,2,3,4}」と全く同じ<br>
+      2グループの入れ替えは 2! = 2通り分重複<br><br>
+      ₈C₄ / 2! = 70 / 2 = <strong>35通り</strong></div>
+      <strong>「区別のないグループへの分け方」では、グループ数の階乗で割る。</strong><br>
+      これが組み合わせの「最終形」。「なぜ割るのか」を理解していれば自然に導ける。`,
+    answer: 35,
+    points: 250,
+  },
+],
 
-            const input = document.getElementById('answer-input');
-            const val = parseInt(input.value);
-            const level = levels[currentLevelIndex];
-            const msgArea = document.getElementById('message-area');
-            const container = document.getElementById('game-container');
+};
 
-            if (isNaN(val)) {
-                msgArea.innerText = "INPUT ERROR: Please enter a number.";
-                msgArea.className = "error";
-                return;
-            }
+/* ============================================================
+   ゲームエンジン
+   ============================================================ */
+let currentLevel = 1;
+let currentQ = 0;
+let score = 0;
+let correctCount = 0;
+let answered = false;
+let questions = [];
 
-            if (val === level.answer) {
-                // Correct
-                isSolved = true;
-                msgArea.innerText = "ACCESS GRANTED. SYSTEM UNLOCKED.";
-                msgArea.className = "success";
-                input.style.borderColor = "#00ff9d";
-                input.style.boxShadow = "0 0 15px #00ff9d";
-                
-                // Pulse effect
-                document.body.classList.add('pulse');
-                setTimeout(() => document.body.classList.remove('pulse'), 1000);
+function startGame(level) {
+  currentLevel = level;
+  currentQ = 0;
+  score = 0;
+  correctCount = 0;
+  answered = false;
+  questions = QUESTIONS[level];
 
-                setTimeout(() => {
-                    currentLevelIndex++;
-                    loadLevel(currentLevelIndex);
-                }, 1500);
+  document.getElementById('title-screen').style.cssText = 'animation:fadeOut 0.4s ease forwards;';
+  setTimeout(() => {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById('game-screen').style.animation = 'fadeIn 0.5s ease';
+  }, 400);
 
-            } else {
-                // Incorrect
-                msgArea.innerText = "ACCESS DENIED. LOGIC MISMATCH.";
-                msgArea.className = "error";
-                container.classList.add('shake');
-                
-                // Remove shake class after animation
-                setTimeout(() => {
-                    container.classList.remove('shake');
-                }, 500);
+  const labels = ['', '📘 LEVEL 1 ― 階乗の感覚', '📗 LEVEL 2 ― 順列の論理', '📕 LEVEL 3 ― 組み合わせの真髄'];
+  document.getElementById('level-label').textContent = labels[level];
+  updateScore();
+  renderQuestion();
+}
 
-                // Analyze error to give smart feedback (simple version)
-                if (val === factorialize(level.n) && level.logic === 'permutation') {
-                    // User calculated n! instead of nPr
-                    document.getElementById('hint-box').innerHTML = "SYSTEM WARNING: You calculated the total arrangement of ALL items (n!).<br>But we only need a specific number of slots.";
-                    document.getElementById('hint-box').style.display = 'block';
-                }
-                else if (val > level.answer && level.logic === 'combination') {
-                    // Likely permutation instead of combination
-                    document.getElementById('hint-box').innerHTML = "SYSTEM WARNING: Value too high. Did you account for order?<br>In this scenario, order DOES NOT matter. (AB = BA). Divide by k!";
-                    document.getElementById('hint-box').style.display = 'block';
-                }
-            }
-        }
+function updateScore() {
+  document.getElementById('score-disp').textContent = score;
+  document.getElementById('correct-disp').textContent = correctCount;
+  const pct = (currentQ / questions.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
 
-        function factorialize(num) {
-            if (num < 0) return -1;
-            else if (num == 0) return 1;
-            else {
-                return (num * factorialize(num - 1));
-            }
-        }
+function renderQuestion() {
+  const q = questions[currentQ];
+  answered = false;
+  const area = document.getElementById('question-area');
+  area.innerHTML = '';
+  area.style.animation = 'slideIn 0.4s ease';
 
-        function gameClear() {
-            document.getElementById('game-container').innerHTML = `
-                <header><h1>SYSTEM SECURED</h1></header>
-                <div class="puzzle-area">
-                    <h2 style="color:var(--primary); font-size: 2rem;">ALL LOGIC LOCKS CLEARED</h2>
-                    <p>Congratulations. Your grasp of combinatorial logic is exceptional.</p>
-                    <p style="margin-top:2rem;">
-                        <button onclick="location.reload()">REBOOT SYSTEM</button>
-                    </p>
-                </div>
-            `;
-            document.getElementById('progress-bar').style.width = '100%';
-        }
+  let html = `
+    <div class="question-card" id="q-card">
+      <div class="q-tag">
+        <div class="q-badge">${currentQ + 1}</div>
+        ${q.tag}
+      </div>
+      <div class="scenario-box">${q.scenario}</div>
+      <div class="q-number">${q.question}</div>
+  `;
 
-        // Enter key support
-        document.getElementById('answer-input').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
-        });
+  if (q.formula) {
+    html += `<div class="formula-display">${q.formula}</div>`;
+  }
 
-    </script>
+  // 階乗ビジュアル
+  if (q.factorial) {
+    html += buildFactorialVisual(q.factorial);
+  }
+
+  // 問題タイプ別UI
+  switch(q.type) {
+    case 'number-input':
+      html += buildNumberInput();
+      break;
+    case 'choice':
+      html += buildChoices(q.choices);
+      break;
+    case 'classify':
+      html += buildClassify(q);
+      break;
+  }
+
+  // ヒント
+  html += `
+    <div class="hint-section">
+      <button class="hint-toggle" onclick="toggleHint(this)">
+        💡 ヒントを表示（-30pt）
+      </button>
+      <div class="hint-content">${q.hint}</div>
+    </div>
+  `;
+
+  html += `<div class="feedback-panel" id="feedback"></div>`;
+  html += `</div>`;
+
+  area.innerHTML = html;
+}
+
+function buildFactorialVisual(n) {
+  let html = '<div class="factorial-visual">';
+  for (let i = n; i >= 1; i--) {
+    html += `<div class="f-num" id="fn-${i}">${i}</div>`;
+    if (i > 1) html += `<span class="f-times">×</span>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function buildNumberInput() {
+  return `
+    <div class="answer-area">
+      <input type="number" class="answer-input" id="ans-input" placeholder="？"
+        onkeydown="if(event.key==='Enter'){checkAnswer()}" />
+      <button class="submit-btn" onclick="checkAnswer()">判定する →</button>
+    </div>
+  `;
+}
+
+function buildChoices(choices) {
+  let html = '<div class="choices-grid">';
+  choices.forEach((c, i) => {
+    html += `<button class="choice-btn" onclick="checkChoice(this,'${String(c).replace(/'/g,"\\'")}')">
+      ${c}
+    </button>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function buildClassify(q) {
+  return `
+    <div style="margin-top:1.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="border:2px solid rgba(245,240,232,0.1);border-radius:12px;padding:1.2rem;font-size:0.9rem;line-height:1.5">${q.itemA}</div>
+        <div style="border:2px solid rgba(245,240,232,0.1);border-radius:12px;padding:1.2rem;font-size:0.9rem;line-height:1.5">${q.itemB}</div>
+      </div>
+      <div class="choices-grid" style="margin-top:1rem">
+        <button class="choice-btn" onclick="checkClassify(this,'left-ordered')" style="font-size:0.85rem">左が順序あり<br>右が順序なし</button>
+        <button class="choice-btn" onclick="checkClassify(this,'right-ordered')" style="font-size:0.85rem">右が順序あり<br>左が順序なし</button>
+        <button class="choice-btn" onclick="checkClassify(this,'both-ordered')" style="font-size:0.85rem">両方順序あり</button>
+        <button class="choice-btn" onclick="checkClassify(this,'both-unordered')" style="font-size:0.85rem">両方順序なし</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleHint(btn) {
+  const content = btn.nextElementSibling;
+  const isOpen = content.classList.contains('open');
+  if (!isOpen) {
+    content.classList.add('open');
+    btn.textContent = '💡 ヒントを隠す';
+    // ヒントペナルティはフィードバック時に適用
+    btn.dataset.used = 'true';
+  } else {
+    content.classList.remove('open');
+    btn.textContent = '💡 ヒントを表示（-30pt）';
+  }
+}
+
+function hintWasUsed() {
+  const btn = document.querySelector('.hint-toggle');
+  return btn && btn.dataset.used === 'true';
+}
+
+/* ===== 答え判定 ===== */
+
+function checkAnswer() {
+  if (answered) return;
+  const input = document.getElementById('ans-input');
+  const val = parseInt(input.value);
+  const q = questions[currentQ];
+  if (isNaN(val)) { input.style.animation = 'shake 0.3s ease'; return; }
+
+  const isCorrect = val === q.answer;
+  processResult(isCorrect, input, q);
+}
+
+function checkChoice(btn, chosen) {
+  if (answered) return;
+  const q = questions[currentQ];
+  const isCorrect = chosen === String(q.answer);
+  
+  document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+  processResult(isCorrect, null, q);
+}
+
+function checkClassify(btn, chosen) {
+  if (answered) return;
+  const isCorrect = chosen === 'left-ordered';
+  document.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = 'none');
+  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+  if (isCorrect) {
+    // ✓ 正解のボタンを強調
+  } else {
+    document.querySelectorAll('.choice-btn')[0].classList.add('correct');
+  }
+  processResult(isCorrect, null, questions[currentQ]);
+}
+
+function processResult(isCorrect, inputEl, q) {
+  answered = true;
+  const card = document.getElementById('q-card');
+  const feedback = document.getElementById('feedback');
+
+  if (isCorrect) {
+    // 正解処理
+    let pts = q.points;
+    if (hintWasUsed()) pts = Math.max(0, pts - 30);
+    score += pts;
+    correctCount++;
+
+    if (inputEl) { inputEl.classList.add('correct'); }
+    card.classList.add('correct-anim');
+    spawnParticles();
+
+    // 階乗ビジュアル点灯
+    if (q.factorial) {
+      for (let i = 1; i <= q.factorial; i++) {
+        setTimeout(() => {
+          const el = document.getElementById('fn-'+i);
+          if (el) el.classList.add('lit');
+        }, i * 120);
+      }
+    }
+
+    feedback.className = 'feedback-panel show';
+    feedback.innerHTML = `
+      <div class="feedback-title ok">✅ 正解！ +${pts}pt${hintWasUsed()?' (ヒント使用 -30pt)':''}</div>
+      <div class="explanation">${q.explanation}</div>
+      ${buildNextBtn()}
+    `;
+  } else {
+    // 不正解処理
+    if (inputEl) { inputEl.classList.add('incorrect'); inputEl.style.animation = 'shake 0.4s ease'; }
+    card.classList.add('wrong-anim');
+
+    feedback.className = 'feedback-panel show wrong';
+    feedback.innerHTML = `
+      <div class="feedback-title ng">❌ 不正解… 正解は <strong style="color:var(--gold)">${q.answer}</strong></div>
+      <div class="explanation">${q.explanation}</div>
+      ${buildNextBtn()}
+    `;
+  }
+
+  updateScore();
+}
+
+function buildNextBtn() {
+  const isLast = currentQ >= questions.length - 1;
+  return `<button class="next-btn" onclick="${isLast ? 'showResult()' : 'nextQuestion()'}">${isLast ? '🏆 結果を見る' : '次の問題へ →'}</button>`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  updateScore();
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+/* ===== パーティクル ===== */
+function spawnParticles() {
+  const emojis = ['✨','⭐','🌟','💫','🎉','🎊','💎'];
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      p.style.left = (20 + Math.random() * 60) + 'vw';
+      p.style.top = (30 + Math.random() * 40) + 'vh';
+      p.style.animationDelay = (Math.random() * 0.3) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 2000);
+    }, i * 80);
+  }
+}
+
+/* ===== 結果画面 ===== */
+function showResult() {
+  document.getElementById('game-screen').style.display = 'none';
+  const resultScreen = document.getElementById('result-screen');
+  resultScreen.style.display = 'flex';
+  resultScreen.style.animation = 'fadeIn 0.6s ease';
+
+  const total = questions.length;
+  const maxScore = questions.reduce((sum, q) => sum + q.points, 0);
+  const pct = Math.round((score / maxScore) * 100);
+
+  let rank, rankEmoji, msg;
+  if (pct >= 90) {
+    rank = 'S'; rankEmoji = '🏆';
+    msg = '完璧な理解！順列・組み合わせの本質を完全に把握した。次は応用問題に挑め。';
+  } else if (pct >= 70) {
+    rank = 'A'; rankEmoji = '🥇';
+    msg = '素晴らしい！基本的な理解は完璧。もう一度挑戦して満点を目指そう。';
+  } else if (pct >= 50) {
+    rank = 'B'; rankEmoji = '🥈';
+    msg = 'まずまず。ヒントの説明をもう一度読んで、「なぜそうなるか」を追いかけよう。';
+  } else {
+    rank = 'C'; rankEmoji = '📚';
+    msg = '基礎に戻ろう。階乗の意味から丁寧に積み上げれば必ず理解できる。';
+  }
+
+  document.getElementById('result-card').innerHTML = `
+    <div class="result-rank">${rankEmoji}</div>
+    <div class="result-title">ランク ${rank}</div>
+    <div class="result-score-big">${score} <span style="font-size:1.2rem;color:rgba(245,240,232,0.5)">/ ${maxScore}pt</span></div>
+    <div style="color:rgba(245,240,232,0.5);margin-bottom:0.5rem;font-size:0.85rem">${correctCount} / ${total} 問正解　正答率 ${Math.round((correctCount/total)*100)}%</div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-btns">
+      <button class="retry-btn" onclick="retryLevel()">もう一度挑戦</button>
+      <button class="home-btn" onclick="goHome()">レベル選択へ</button>
+    </div>
+  `;
+
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => spawnParticles(), i * 100);
+  }
+}
+
+function retryLevel() {
+  document.getElementById('result-screen').style.display = 'none';
+  startGame(currentLevel);
+}
+
+function goHome() {
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  const title = document.getElementById('title-screen');
+  title.style.display = 'flex';
+  title.style.animation = 'fadeIn 0.5s ease';
+}
+</script>
 </body>
 </html>
