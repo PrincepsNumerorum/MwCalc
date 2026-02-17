@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE LOGIC LOCK: Permutation & Combination</title>
+    <style>
+        :root {
+            --primary: #00ff9d;
+            --primary-dim: #004d33;
+            --accent: #ff0055;
+            --bg: #0a0a0a;
+            --panel: #111;
+            --text: #e0e0e0;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--panel);
+            border: 2px solid var(--primary-dim);
+            box-shadow: 0 0 20px var(--primary-dim);
+            padding: 2rem;
+            border-radius: 8px;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary-dim);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: var(--font-mono);
+            color: var(--primary);
+            text-shadow: 0 0 5px var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .level-indicator {
+            font-family: var(--font-mono);
+            color: var(--primary);
+        }
+
+        .puzzle-area {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .keyword {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .input-area {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        input[type="number"] {
+            background: #000;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            width: 150px;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        button {
+            background: var(--primary-dim);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .hint-btn {
+            background: transparent;
+            border: 1px solid #555;
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .hint-btn:hover {
+            border-color: #aaa;
+            color: #aaa;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        #message-area {
+            height: 3rem;
+            margin-top: 1rem;
+            font-family: var(--font-mono);
+            font-weight: bold;
+        }
+
+        .success { color: var(--primary); }
+        .error { color: var(--accent); }
+
+        /* Hint Box */
+        #hint-box {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #222;
+            border: 1px dashed #555;
+            font-size: 0.9rem;
+            color: #ccc;
+            text-align: left;
+        }
+
+        /* Visualization Area */
+        .visualizer {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+            height: 50px;
+            align-items: center;
+        }
+        .slot {
+            width: 40px;
+            height: 40px;
+            border: 1px dashed #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-mono);
+            color: #555;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        .crt-overlay {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
+        }
+
+        .pulse {
+            animation: pulse 1s;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 4px;
+            background: var(--primary);
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width 0.5s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="progress-bar"></div>
+        <header>
+            <h1>LOGIC LOCK <span style="font-size:0.5em; vertical-align:middle;">v1.0</span></h1>
+            <div class="level-indicator">SECURITY LEVEL: <span id="level-num">1</span>/5</div>
+        </header>
+
+        <div class="puzzle-area">
+            <div id="story" class="story-text">
+                </div>
+
+            <div class="visualizer" id="visualizer">
+                </div>
+
+            <div class="input-area">
+                <input type="number" id="answer-input" placeholder="CODE" autocomplete="off">
+                <button onclick="checkAnswer()">UNLOCK</button>
+            </div>
+            
+            <div id="message-area"></div>
+            
+            <button class="hint-btn" onclick="toggleHint()">REQUEST LOGIC ASSISTANCE</button>
+            <div id="hint-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const levels = [
+            {
+                id: 1,
+                title: "Energy Core Alignment",
+                story: "原子炉の制御棒が<span class='keyword'>5本</span>ある（A, B, C, D, E）。これらをスロットに１列に挿入しなければならない。<br>順番が異なればエネルギー出力が変わるため、全ての配置パターンをシミュレーションする必要がある。<br><br>考えられる配置の総数はいくつか？",
+                logic: "factorial",
+                n: 5,
+                r: 5,
+                answer: 120,
+                hint1: "5本すべてを使って、1列に並べる並べ方です。",
+                hint2: "最初のスロットには5通りの選択肢、次は4通り...と減っていきます。<br>数式: 5!",
+                visual: ["A", "B", "C", "D", "E"]
+            },
+            {
+                id: 2,
+                title: "Passcode Decryption",
+                story: "敵のアジトの電子ロックを解除する。キーパッドには0〜9の数字がある。<br>スパイ情報によると、パスコードは<span class='keyword'>異なる4つの数字</span>の並びである（例: 1234 と 4321 は別物）。<br><br>総当たり攻撃を行うための、最大試行回数は？",
+                logic: "permutation",
+                n: 10,
+                r: 4,
+                answer: 5040,
+                hint1: "10個の数字から4個を選んで、並べる順番も区別します。<br>「選んで、並べる」＝ 順列 (Permutation)",
+                hint2: "数式: <sub>10</sub>P<sub>4</sub><br>1桁目は10通り、2桁目は9通り...",
+                visual: ["?", "?", "?", "?"]
+            },
+            {
+                id: 3,
+                title: "Server Node Selection",
+                story: "ウイルス対策のために、稼働中の<span class='keyword'>8台</span>のサーバーから、メンテナンスする<span class='keyword'>3台</span>を選び出して隔離する必要がある。<br>選ぶ順番は関係なく、どの3台の組み合わせであるかだけが重要だ。<br><br>可能なサーバーの組み合わせは何通りあるか？",
+                logic: "combination",
+                n: 8,
+                r: 3,
+                answer: 56,
+                hint1: "順番は関係ありません。「ABC」を選んでも「CBA」を選んでも、隔離されるチームは同じです。",
+                hint2: "順列(<sub>8</sub>P<sub>3</sub>)から、選んだ3台の並び順の重複(3!)を割り算して消去します。<br>数式: <sub>8</sub>C<sub>3</sub>",
+                visual: ["Server", "Server", "Server"]
+            },
+            {
+                id: 4,
+                title: "The VIP Seating Protocol",
+                story: "円卓会議での交渉。6人の代表者（A〜F）が円形のテーブルに座る。<br>ただし、回転して重なる並びは「同じ席順」とみなされる。<br><br>座り方は全部で何通りあるか？",
+                logic: "circular",
+                n: 6,
+                r: 6,
+                answer: 120,
+                hint1: "円順列です。1人を固定して考えると、残りの人たちの順列になります。",
+                hint2: "公式: (n-1)!<br>6人のうちAさんを固定すると、残り5人の並び方を考えればよいことになります。",
+                visual: ["○", "○", "○", "○", "○", "○"]
+            },
+            {
+                id: 5,
+                title: "Final Security Override",
+                story: "最終防壁。<span class='keyword'>7本</span>のケーブル（赤、青、黄、緑、白、黒、紫）を一列に配線する。<br>ただし、<span class='keyword'>「赤」と「青」は必ず隣り合わせ</span>にしなければ回路が繋がらない。<br><br>有効な配線パターンは何通りか？",
+                logic: "restriction",
+                n: 7,
+                r: 7,
+                answer: 1440,
+                hint1: "「赤と青」を縛って『1つのセット』とみなします。すると全体は何個の並び替えになりますか？",
+                hint2: "1. (赤青)セット＋残り5本 ＝ 計6個のモノの順列 (6!)<br>2. その後、セットの中での(赤青)と(青赤)の入れ替え (2!) を掛け合わせます。<br>式: 6! × 2!",
+                visual: ["(RB)", "Y", "G", "W", "B", "P"]
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        let isSolved = false;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLevel(currentLevelIndex);
+        });
+
+        function loadLevel(index) {
+            if (index >= levels.length) {
+                gameClear();
+                return;
+            }
+
+            const level = levels[index];
+            isSolved = false;
+
+            // UI Update
+            document.getElementById('level-num').innerText = index + 1;
+            document.getElementById('story').innerHTML = `<h3>${level.title}</h3>${level.story}`;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('message-area').innerText = '';
+            document.getElementById('message-area').className = '';
+            document.getElementById('hint-box').style.display = 'none';
+            document.getElementById('hint-box').innerHTML = `<strong>HINT LEVEL 1:</strong><br>${level.hint1}<br><br><button class="hint-btn" onclick="showSecondHint()">SHOW FORMULA</button>`;
+            
+            // Progress Bar
+            const progress = (index / levels.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            // Visualizer update (abstract)
+            const viz = document.getElementById('visualizer');
+            viz.innerHTML = '';
+            level.visual.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'slot';
+                div.innerText = item;
+                viz.appendChild(div);
+            });
+        }
+
+        function showSecondHint() {
+            const level = levels[currentLevelIndex];
+            document.getElementById('hint-box').innerHTML = `
+                <strong>HINT LEVEL 1:</strong><br>${level.hint1}<br><hr>
+                <strong>HINT LEVEL 2 (FORMULA):</strong><br>${level.hint2}
+            `;
+        }
+
+        function toggleHint() {
+            const box = document.getElementById('hint-box');
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+            }
+        }
+
+        function checkAnswer() {
+            if (isSolved) return;
+
+            const input = document.getElementById('answer-input');
+            const val = parseInt(input.value);
+            const level = levels[currentLevelIndex];
+            const msgArea = document.getElementById('message-area');
+            const container = document.getElementById('game-container');
+
+            if (isNaN(val)) {
+                msgArea.innerText = "INPUT ERROR: Please enter a number.";
+                msgArea.className = "error";
+                return;
+            }
+
+            if (val === level.answer) {
+                // Correct
+                isSolved = true;
+                msgArea.innerText = "ACCESS GRANTED. SYSTEM UNLOCKED.";
+                msgArea.className = "success";
+                input.style.borderColor = "#00ff9d";
+                input.style.boxShadow = "0 0 15px #00ff9d";
+                
+                // Pulse effect
+                document.body.classList.add('pulse');
+                setTimeout(() => document.body.classList.remove('pulse'), 1000);
+
+                setTimeout(() => {
+                    currentLevelIndex++;
+                    loadLevel(currentLevelIndex);
+                }, 1500);
+
+            } else {
+                // Incorrect
+                msgArea.innerText = "ACCESS DENIED. LOGIC MISMATCH.";
+                msgArea.className = "error";
+                container.classList.add('shake');
+                
+                // Remove shake class after animation
+                setTimeout(() => {
+                    container.classList.remove('shake');
+                }, 500);
+
+                // Analyze error to give smart feedback (simple version)
+                if (val === factorialize(level.n) && level.logic === 'permutation') {
+                    // User calculated n! instead of nPr
+                    document.getElementById('hint-box').innerHTML = "SYSTEM WARNING: You calculated the total arrangement of ALL items (n!).<br>But we only need a specific number of slots.";
+                    document.getElementById('hint-box').style.display = 'block';
+                }
+                else if (val > level.answer && level.logic === 'combination') {
+                    // Likely permutation instead of combination
+                    document.getElementById('hint-box').innerHTML = "SYSTEM WARNING: Value too high. Did you account for order?<br>In this scenario, order DOES NOT matter. (AB = BA). Divide by k!";
+                    document.getElementById('hint-box').style.display = 'block';
+                }
+            }
+        }
+
+        function factorialize(num) {
+            if (num < 0) return -1;
+            else if (num == 0) return 1;
+            else {
+                return (num * factorialize(num - 1));
+            }
+        }
+
+        function gameClear() {
+            document.getElementById('game-container').innerHTML = `
+                <header><h1>SYSTEM SECURED</h1></header>
+                <div class="puzzle-area">
+                    <h2 style="color:var(--primary); font-size: 2rem;">ALL LOGIC LOCKS CLEARED</h2>
+                    <p>Congratulations. Your grasp of combinatorial logic is exceptional.</p>
+                    <p style="margin-top:2rem;">
+                        <button onclick="location.reload()">REBOOT SYSTEM</button>
+                    </p>
+                </div>
+            `;
+            document.getElementById('progress-bar').style.width = '100%';
+        }
+
+        // Enter key support
+        document.getElementById('answer-input').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
+
+    </script>
+</body>
+</html>
