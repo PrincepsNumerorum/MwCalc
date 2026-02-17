@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二次関数 攻略ラボ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@400;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;700;900&display=swap');
+
+:root{
+  --bg:#f0ede8;
+  --bg2:#e8e4de;
+  --surface:#ffffff;
+  --surface2:#f7f5f2;
+  --ink:#1c1917;
+  --ink2:#44403c;
+  --ink3:#78716c;
+  --line:#d6d3d1;
+  --red:#dc2626;
+  --orange:#ea580c;
+  --amber:#d97706;
+  --teal:#0d9488;
+  --blue:#2563eb;
+  --violet:#7c3aed;
+  --green:#16a34a;
+  --shadow-sm:0 1px 3px rgba(28,25,23,.08),0 1px 2px rgba(28,25,23,.06);
+  --shadow-md:0 4px 16px rgba(28,25,23,.10),0 2px 6px rgba(28,25,23,.06);
+  --shadow-lg:0 10px 40px rgba(28,25,23,.12),0 4px 12px rgba(28,25,23,.08);
+  --r:16px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh;
+  line-height:1.6;
+}
+
+/* ─────────────────────────────
+   背景テクスチャ
+───────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(220,38,38,.04) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(37,99,235,.04) 0%, transparent 40%),
+    repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(28,25,23,.025) 39px,rgba(28,25,23,.025) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(28,25,23,.025) 39px,rgba(28,25,23,.025) 40px);
+  pointer-events:none;z-index:0;
+}
+
+/* ─────────────────────────────
+   共通アニメーション
+───────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes drawCurve{from{stroke-dashoffset:2000}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 4px rgba(220,38,38,0))}50%{filter:drop-shadow(0 0 8px rgba(220,38,38,.5))}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes countUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes celebrate{0%{transform:scale(1) rotate(0deg)}25%{transform:scale(1.1) rotate(-3deg)}50%{transform:scale(1.15) rotate(3deg)}75%{transform:scale(1.1) rotate(-2deg)}100%{transform:scale(1) rotate(0deg)}}
+
+/* ─────────────────────────────
+   タイトル画面
+───────────────────────────── */
+#title-screen{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem 1rem;
+  animation:fadeIn .6s ease;
+}
+
+.title-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;letter-spacing:.25em;
+  color:var(--ink3);text-transform:uppercase;
+  margin-bottom:1.5rem;
+  background:var(--surface2);
+  border:1px solid var(--line);
+  padding:.35rem 1rem;border-radius:100px;
+}
+
+.title-hero{
+  font-family:'Kaisei Tokumin',serif;
+  font-size:clamp(2.4rem,7vw,5rem);
+  font-weight:800;
+  line-height:1.1;
+  text-align:center;
+  letter-spacing:-.02em;
+  margin-bottom:.75rem;
+}
+.title-hero .accent{color:var(--red);}
+
+.title-sub{
+  font-size:1rem;color:var(--ink2);
+  text-align:center;max-width:480px;
+  margin-bottom:3rem;
+}
+
+/* SVGデモグラフ */
+.demo-graph-wrap{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:1rem;
+  box-shadow:var(--shadow-md);
+  margin-bottom:2.5rem;
+  animation:fadeUp .8s .2s both;
+}
+
+/* モード選択カード */
+.mode-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1.25rem;
+  width:100%;max-width:900px;
+  animation:fadeUp .8s .3s both;
+}
+
+.mode-card{
+  background:var(--surface);
+  border:2px solid var(--line);
+  border-radius:var(--r);
+  padding:2rem 1.75rem;
+  cursor:pointer;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.mode-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 60%,rgba(0,0,0,.02) 100%);
+}
+.mode-card:hover{
+  transform:translateY(-6px) scale(1.01);
+  box-shadow:var(--shadow-lg);
+  border-color:currentColor;
+}
+.mode-card.red{color:var(--red);}
+.mode-card.blue{color:var(--blue);}
+.mode-card.violet{color:var(--violet);}
+.mode-card.teal{color:var(--teal);}
+
+.mc-icon{font-size:2.2rem;margin-bottom:.75rem;}
+.mc-label{
+  font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;
+  opacity:.7;margin-bottom:.4rem;
+}
+.mc-title{
+  font-family:'Kaisei Tokumin',serif;
+  font-size:1.25rem;font-weight:700;
+  color:var(--ink);margin-bottom:.5rem;
+}
+.mc-desc{font-size:.82rem;color:var(--ink3);line-height:1.6;}
+.mc-badge{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.65rem;font-weight:700;
+  padding:.2rem .6rem;border-radius:4px;
+  background:currentColor;color:#fff;
+  margin-top:.75rem;
+  opacity:.85;
+}
+
+/* ─────────────────────────────
+   ゲーム画面
+───────────────────────────── */
+#game-screen{
+  display:none;
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:0;
+}
+
+/* ヘッダーバー */
+.game-bar{
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  padding:.75rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-sm);
+}
+
+.game-bar-left{display:flex;align-items:center;gap:1rem;}
+.back-btn{
+  background:none;border:1.5px solid var(--line);
+  border-radius:8px;padding:.4rem .9rem;
+  font-family:'Noto Sans JP',sans-serif;font-size:.8rem;
+  color:var(--ink2);cursor:pointer;transition:all .2s;
+}
+.back-btn:hover{border-color:var(--ink2);color:var(--ink);}
+
+.mode-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;letter-spacing:.1em;
+  background:var(--surface2);border:1px solid var(--line);
+  border-radius:6px;padding:.3rem .8rem;
+  color:var(--ink3);
+}
+
+.stat-group{display:flex;gap:1.5rem;align-items:center;}
+.stat-item{text-align:right;}
+.stat-label{font-size:.6rem;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--ink);}
+.stat-value.score{color:var(--red);}
+
+/* プログレスバー */
+.prog-wrap{
+  height:4px;background:var(--line);
+  position:sticky;top:57px;z-index:99;
+}
+.prog-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--red),var(--orange));
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+
+/* ─────────────────────────────
+   問題レイアウト（2カラム）
+───────────────────────────── */
+.q-layout{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:0;
+  min-height:calc(100vh - 65px);
+  max-width:1200px;
+  margin:0 auto;
+  padding:1.5rem;
+  gap:1.5rem;
+  align-items:start;
+}
+@media(max-width:900px){
+  .q-layout{grid-template-columns:1fr;padding:1rem;}
+}
+
+/* 左ペイン：問題テキスト */
+.q-left{
+  animation:slideRight .4s ease;
+}
+
+.q-number-chip{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;letter-spacing:.15em;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:100px;padding:.35rem 1rem;
+  color:var(--ink3);
+  margin-bottom:1.25rem;
+}
+.q-num-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--red);
+}
+
+.q-topic{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--red);margin-bottom:.5rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.q-topic::before{content:'';width:16px;height:2px;background:var(--red);}
+
+.q-text{
+  font-family:'Kaisei Tokumin',serif;
+  font-size:1.35rem;font-weight:700;
+  line-height:1.55;
+  color:var(--ink);
+  margin-bottom:1.25rem;
+}
+
+.q-context{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-left:4px solid var(--amber);
+  border-radius:0 12px 12px 0;
+  padding:1rem 1.25rem;
+  font-size:.88rem;color:var(--ink2);
+  line-height:1.75;
+  margin-bottom:1.5rem;
+}
+.q-context strong{color:var(--ink);font-weight:700;}
+
+/* 数式ブロック */
+.formula-box{
+  background:var(--ink);
+  border-radius:12px;
+  padding:1rem 1.5rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:1rem;
+  color:#f0ede8;
+  letter-spacing:.04em;
+  margin:1rem 0;
+  text-align:center;
+  line-height:1.8;
+}
+.formula-box .highlight{color:#fbbf24;}
+.formula-box .dim{color:rgba(240,237,232,.45);}
+
+/* 手順パネル */
+.steps-panel{
+  margin:1.25rem 0;
+}
+.step-row{
+  display:flex;gap:.75rem;align-items:flex-start;
+  padding:.75rem 0;
+  border-bottom:1px solid var(--line);
+  font-size:.875rem;color:var(--ink2);
+  line-height:1.65;
+}
+.step-row:last-child{border-bottom:none;}
+.step-num{
+  flex-shrink:0;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:.1rem;
+}
+
+/* ─────────────────────────────
+   入力UI
+───────────────────────────── */
+.input-section{margin-top:1.5rem;}
+
+.input-row{
+  display:flex;gap:.75rem;align-items:center;
+  flex-wrap:wrap;margin-bottom:1rem;
+}
+.input-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.8rem;color:var(--ink3);
+  min-width:80px;
+}
+
+.num-input{
+  width:90px;
+  background:var(--surface);
+  border:2px solid var(--line);
+  border-radius:10px;
+  padding:.6rem .75rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;font-weight:700;
+  color:var(--ink);text-align:center;
+  outline:none;
+  transition:all .2s;
+}
+.num-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.num-input.ok{border-color:var(--green);background:rgba(22,163,74,.06);}
+.num-input.ng{border-color:var(--red);animation:shake .3s ease;}
+
+.submit-btn{
+  background:var(--ink);
+  color:#f0ede8;
+  border:none;border-radius:10px;
+  padding:.65rem 1.75rem;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:.9rem;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.submit-btn:hover{background:var(--red);transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.submit-btn:active{transform:translateY(0);}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* 選択肢グリッド */
+.choices-wrap{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:.75rem;
+  margin-top:1rem;
+}
+.choice-card{
+  background:var(--surface);
+  border:2px solid var(--line);
+  border-radius:12px;
+  padding:1rem;
+  cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  font-size:.88rem;
+  text-align:center;
+  font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--ink);
+}
+.choice-card:hover{
+  border-color:var(--blue);background:rgba(37,99,235,.04);
+  transform:translateY(-3px);box-shadow:var(--shadow-md);
+}
+.choice-card.selected{border-color:var(--amber);background:rgba(217,119,6,.06);}
+.choice-card.correct{border-color:var(--green);background:rgba(22,163,74,.08);color:var(--green);pointer-events:none;}
+.choice-card.incorrect{border-color:var(--red);background:rgba(220,38,38,.06);color:var(--red);pointer-events:none;}
+
+/* スライダーUI */
+.slider-wrap{margin:1.25rem 0;}
+.slider-row{
+  display:flex;align-items:center;gap:1rem;
+  margin-bottom:.75rem;
+}
+.slider-name{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.8rem;color:var(--ink2);
+  width:30px;text-align:right;
+}
+.slider-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1rem;font-weight:700;color:var(--ink);
+  width:36px;text-align:center;
+}
+input[type=range]{
+  flex:1;
+  -webkit-appearance:none;
+  height:4px;border-radius:4px;
+  background:linear-gradient(90deg,var(--red) var(--pct,50%),var(--line) var(--pct,50%));
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--surface);
+  border:3px solid var(--red);
+  cursor:pointer;
+  transition:all .15s;
+  box-shadow:var(--shadow-sm);
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
+
+/* ─────────────────────────────
+   右ペイン：グラフ
+───────────────────────────── */
+.q-right{
+  position:sticky;top:80px;
+  animation:scaleIn .4s ease;
+}
+
+.graph-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+}
+.graph-header{
+  background:var(--surface2);
+  border-bottom:1px solid var(--line);
+  padding:.75rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.graph-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);
+}
+.graph-eq{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85rem;font-weight:700;
+  color:var(--ink);
+  transition:all .3s;
+}
+
+.graph-canvas-wrap{padding:1rem;}
+#mainCanvas{
+  display:block;width:100%;
+  border-radius:8px;
+  background:var(--bg2);
+}
+
+.graph-info{
+  border-top:1px solid var(--line);
+  padding:.75rem 1.25rem;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:.5rem;
+}
+.gi-item{text-align:center;}
+.gi-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;}
+.gi-val{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;color:var(--ink);}
+
+/* ─────────────────────────────
+   ヒント & フィードバック
+───────────────────────────── */
+.hint-btn{
+  background:none;
+  border:1.5px solid var(--amber);
+  border-radius:8px;
+  padding:.45rem 1rem;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:.78rem;color:var(--amber);
+  cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:.4rem;
+  margin-top:.75rem;
+}
+.hint-btn:hover{background:rgba(217,119,6,.06);}
+
+.hint-panel{
+  display:none;
+  background:rgba(217,119,6,.05);
+  border:1.5px solid rgba(217,119,6,.25);
+  border-radius:12px;padding:1.1rem 1.25rem;
+  font-size:.85rem;color:var(--ink2);
+  line-height:1.75;margin-top:.75rem;
+}
+.hint-panel.open{display:block;animation:slideRight .3s ease;}
+.hint-panel strong{color:var(--ink);}
+.hint-panel .hint-formula{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:.5rem .9rem;
+  font-size:.8rem;color:var(--teal);
+  display:inline-block;margin:.3rem 0;
+}
+
+/* フィードバックパネル */
+.feedback-panel{
+  display:none;
+  border-radius:12px;padding:1.25rem 1.5rem;
+  margin-top:1.25rem;
+  animation:slideRight .35s ease;
+}
+.feedback-panel.show{display:block;}
+.feedback-panel.ok{
+  background:rgba(22,163,74,.06);
+  border:1.5px solid rgba(22,163,74,.25);
+}
+.feedback-panel.ng{
+  background:rgba(220,38,38,.05);
+  border:1.5px solid rgba(220,38,38,.2);
+}
+.fb-title{
+  font-family:'Kaisei Tokumin',serif;
+  font-size:1.05rem;font-weight:700;
+  margin-bottom:.75rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.fb-title.ok{color:var(--green);}
+.fb-title.ng{color:var(--red);}
+.fb-body{font-size:.85rem;color:var(--ink2);line-height:1.8;}
+.fb-body .fb-step{
+  background:var(--ink);
+  border-radius:8px;padding:.75rem 1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;color:#f0ede8;
+  line-height:1.9;margin:.75rem 0;
+}
+.fb-body .fb-step .hl{color:#fbbf24;}
+.fb-body .fb-step .hl2{color:#86efac;}
+
+.next-btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--red);color:#fff;
+  border:none;border-radius:10px;
+  padding:.65rem 1.75rem;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:.9rem;font-weight:700;
+  cursor:pointer;
+  margin-top:1.25rem;
+  transition:all .2s;
+}
+.next-btn:hover{background:#b91c1c;transform:translateY(-2px);box-shadow:var(--shadow-md);}
+
+/* ─────────────────────────────
+   インタラクティブ平行移動UI
+───────────────────────────── */
+.translation-ui{
+  background:var(--surface2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:1.25rem;
+  margin:1.25rem 0;
+}
+.trans-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:1rem;
+}
+.trans-display{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;font-weight:700;
+  color:var(--ink);text-align:center;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:.6rem;margin-bottom:1rem;
+  min-height:2.5rem;
+  transition:all .3s;
+}
+
+/* 座標入力ペア */
+.coord-inputs{
+  display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;
+}
+.coord-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85rem;color:var(--ink2);
+  font-weight:600;
+}
+
+/* ─────────────────────────────
+   結果画面
+───────────────────────────── */
+#result-screen{
+  display:none;
+  position:relative;z-index:1;
+  min-height:100vh;
+  align-items:center;justify-content:center;
+  padding:2rem;
+  animation:fadeIn .5s ease;
+}
+
+.result-wrap{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:3rem 2.5rem;
+  max-width:640px;width:100%;
+  box-shadow:var(--shadow-lg);
+  text-align:center;
+  animation:scaleIn .5s cubic-bezier(.34,1.56,.64,1);
+}
+
+.result-icon{
+  font-size:4rem;margin-bottom:1rem;
+  display:block;
+}
+.result-grade{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:.5rem;
+}
+.result-title{
+  font-family:'Kaisei Tokumin',serif;
+  font-size:2.25rem;font-weight:800;
+  color:var(--ink);margin-bottom:1.5rem;
+}
+
+.score-ring-wrap{
+  display:flex;justify-content:center;margin-bottom:1.5rem;
+}
+
+.result-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1rem;margin-bottom:2rem;
+}
+.rs-item{
+  background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:1rem .5rem;
+}
+.rs-label{font-size:.65rem;color:var(--ink3);margin-bottom:.35rem;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;}
+.rs-val{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--ink);}
+
+.result-msg{
+  font-size:.9rem;color:var(--ink2);line-height:1.75;
+  margin-bottom:2rem;
+}
+
+.result-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+
+.rbtn-primary{
+  background:var(--red);color:#fff;
+  border:none;border-radius:10px;padding:.75rem 2rem;
+  font-family:'Noto Sans JP',sans-serif;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.rbtn-primary:hover{background:#b91c1c;transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.rbtn-secondary{
+  background:var(--surface);border:2px solid var(--line);
+  border-radius:10px;padding:.75rem 2rem;
+  font-family:'Noto Sans JP',sans-serif;font-size:.95rem;font-weight:700;
+  color:var(--ink2);cursor:pointer;transition:all .2s;
+}
+.rbtn-secondary:hover{border-color:var(--ink2);color:var(--ink);}
+
+/* パーティクル */
+.p-star{
+  position:fixed;pointer-events:none;
+  font-size:1.2rem;
+  animation:particle-up 1.8s ease forwards;
+  z-index:9999;
+}
+@keyframes particle-up{
+  from{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}
+  to{opacity:0;transform:translateY(-100px) rotate(180deg) scale(0.5)}
+}
+</style>
+</head>
+<body>
+
+<div id="title-screen">
+  <div class="title-eyebrow">🔬 Math Lab — Quadratic Functions</div>
+
+  <h1 class="title-hero">
+    二次関数<br><span class="accent">攻略ラボ</span>
+  </h1>
+  <p class="title-sub">平方完成・頂点・平行移動を<br>グラフで体感しながら論理的に習得する</p>
+
+  <div class="demo-graph-wrap">
+    <canvas id="demoCanvas" width="520" height="160" style="display:block;width:100%;max-width:520px;"></canvas>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card red" onclick="startMode('kansei')">
+      <div class="mc-icon">📐</div>
+      <div class="mc-label">Stage 1</div>
+      <div class="mc-title">平方完成マスター</div>
+      <div class="mc-desc">一般形から標準形へ。<br>平方完成の手順を一問一問確実に習得する。</div>
+      <div class="mc-badge">6問</div>
+    </div>
+    <div class="mode-card blue" onclick="startMode('vertex')">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-label">Stage 2</div>
+      <div class="mc-title">頂点を狙い撃て</div>
+      <div class="mc-desc">グラフを見て頂点の座標を読む。<br>式から正確に頂点を求める力を鍛える。</div>
+      <div class="mc-badge">6問</div>
+    </div>
+    <div class="mode-card violet" onclick="startMode('heikou')">
+      <div class="mc-icon">↗️</div>
+      <div class="mc-label">Stage 3</div>
+      <div class="mc-title">平行移動の法則</div>
+      <div class="mc-desc">グラフをx軸・y軸方向に動かす。<br>「なぜ符号が逆になるか」を理解する。</div>
+      <div class="mc-badge">6問</div>
+    </div>
+    <div class="mode-card teal" onclick="startMode('all')">
+      <div class="mc-icon">💎</div>
+      <div class="mc-label">FINAL</div>
+      <div class="mc-title">総合チャレンジ</div>
+      <div class="mc-desc">全分野から出題。<br>本当に理解できているかを試す総合問題。</div>
+      <div class="mc-badge">10問</div>
+    </div>
+  </div>
+</div>
+
+<div id="game-screen">
+  <div class="game-bar">
+    <div class="game-bar-left">
+      <button class="back-btn" onclick="goHome()">← ホーム</button>
+      <div class="mode-tag" id="mode-tag-label"></div>
+    </div>
+    <div class="stat-group">
+      <div class="stat-item">
+        <div class="stat-label">問題</div>
+        <div class="stat-value" id="q-counter">1 / 6</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">正解</div>
+        <div class="stat-value" style="color:var(--green)" id="correct-counter">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">スコア</div>
+        <div class="stat-value score" id="score-disp">0</div>
+      </div>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <div class="q-layout">
+    <div class="q-left" id="q-left-pane"></div>
+    <div class="q-right" id="q-right-pane"></div>
+  </div>
+</div>
+
+<div id="result-screen">
+  <div class="result-wrap" id="result-wrap"></div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   グラフ描画エンジン
+════════════════════════════════ */
+
+function drawGraph(canvas, params){
+  const {a=1, p=0, q=0, showTarget=false, targetA=1, targetP=0, targetQ=0,
+         highlightVertex=false, showAxis=true, range=6} = params;
+
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const cx = W/2, cy = H/2;
+  const scale = (W/2)/range;
+
+  // 背景
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim() || '#e8e4de';
+  ctx.fillRect(0,0,W,H);
+
+  // グリッド
+  ctx.strokeStyle = 'rgba(28,25,23,.08)';
+  ctx.lineWidth = 1;
+  for(let i=-range;i<=range;i++){
+    ctx.beginPath();ctx.moveTo(cx+i*scale,0);ctx.lineTo(cx+i*scale,H);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,cy+i*scale);ctx.lineTo(W,cy+i*scale);ctx.stroke();
+  }
+
+  // 軸
+  if(showAxis){
+    ctx.strokeStyle='rgba(28,25,23,.3)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+    // 軸ラベル
+    ctx.fillStyle='rgba(28,25,23,.4)';ctx.font='bold 10px JetBrains Mono,monospace';ctx.textAlign='center';
+    for(let i=-range+1;i<range;i++){
+      if(i===0)continue;
+      if(Math.abs(i)<=range && i%2===0){
+        ctx.fillText(i,cx+i*scale,cy+14);
+        ctx.fillText(-i,cx-3,cy+i*scale+4);
+      }
+    }
+    ctx.fillText('x',W-8,cy-6);ctx.fillText('y',cx+8,8);
+  }
+
+  // 目標グラフ（薄い点線）
+  if(showTarget){
+    ctx.save();
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle='rgba(37,99,235,.35)';ctx.lineWidth=2;
+    ctx.beginPath();
+    let first=true;
+    for(let px=0;px<W;px++){
+      const x=(px-cx)/scale;
+      const y=targetA*(x-targetP)**2+targetQ;
+      const py=cy-y*scale;
+      if(py>-50&&py<H+50){
+        if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
+      }else first=true;
+    }
+    ctx.stroke();ctx.restore();
+    // 目標頂点
+    const tvx=cx+targetP*scale, tvy=cy-targetQ*scale;
+    if(tvy>-10&&tvy<H+10){
+      ctx.save();
+      ctx.fillStyle='rgba(37,99,235,.5)';
+      ctx.beginPath();ctx.arc(tvx,tvy,5,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // メイングラフ
+  ctx.save();
+  ctx.strokeStyle='#dc2626';ctx.lineWidth=3;
+  ctx.shadowColor='rgba(220,38,38,.3)';ctx.shadowBlur=6;
+  ctx.beginPath();
+  let first=true;
+  for(let px=0;px<W;px++){
+    const x=(px-cx)/scale;
+    const y=a*(x-p)**2+q;
+    const py=cy-y*scale;
+    if(py>-50&&py<H+50){
+      if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
+    }else first=true;
+  }
+  ctx.stroke();ctx.restore();
+
+  // 頂点強調
+  if(highlightVertex){
+    const vx=cx+p*scale, vy=cy-q*scale;
+    if(vy>-10&&vy<H+10){
+      // 破線補助線
+      ctx.save();ctx.setLineDash([4,3]);
+      ctx.strokeStyle='rgba(220,38,38,.3)';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(vx,cy);ctx.lineTo(vx,vy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,vy);ctx.lineTo(vx,vy);ctx.stroke();
+      ctx.restore();
+      // 頂点マーカー
+      ctx.save();
+      ctx.fillStyle='#dc2626';
+      ctx.shadowColor='rgba(220,38,38,.5)';ctx.shadowBlur=10;
+      ctx.beginPath();ctx.arc(vx,vy,6,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+      // 座標テキスト
+      ctx.fillStyle='#dc2626';
+      ctx.font='bold 11px JetBrains Mono,monospace';
+      ctx.textAlign='left';
+      const label=`(${p},${q})`;
+      const tx=vx+8>W-60?vx-8-60:vx+8;
+      ctx.fillText(label,tx,vy-8);
+    }
+  }
+}
+
+/* デモグラフ（タイトル画面） */
+function drawDemo(){
+  const c=document.getElementById('demoCanvas');
+  if(!c)return;
+  const W=c.width=c.offsetWidth*window.devicePixelRatio||520;
+  const H=c.height=160;
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const colors=['#dc2626','#2563eb','#7c3aed','#0d9488'];
+  const curves=[{a:1,p:0,q:-2},{a:-0.5,p:2,q:3},{a:1.5,p:-3,q:0},{a:0.8,p:1,q:1}];
+  const cx=W/2,cy=H/2,sc=(W/2)/7;
+  ctx.fillStyle='#e8e4de';ctx.fillRect(0,0,W,H);
+  // グリッド
+  ctx.strokeStyle='rgba(28,25,23,.06)';ctx.lineWidth=1;
+  for(let i=-7;i<=7;i++){
+    ctx.beginPath();ctx.moveTo(cx+i*sc,0);ctx.lineTo(cx+i*sc,H);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,cy+i*sc);ctx.lineTo(W,cy+i*sc);ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(28,25,23,.2)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  curves.forEach((cur,i)=>{
+    ctx.strokeStyle=colors[i];ctx.lineWidth=2.5;
+    ctx.globalAlpha=0.75;
+    ctx.beginPath();let first=true;
+    for(let px=0;px<W;px++){
+      const x=(px-cx)/sc,y=cur.a*(x-cur.p)**2+cur.q,py=cy-y*sc;
+      if(py>-30&&py<H+30){if(first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);}else first=true;
+    }
+    ctx.stroke();
+  });
+  ctx.globalAlpha=1;
+}
+window.addEventListener('load',drawDemo);
+window.addEventListener('resize',drawDemo);
+
+/* ════════════════════════════════
+   問題データベース
+════════════════════════════════ */
+
+function makeQ(id,topic,text,context,type,inputDef,answer,hint,explanation,graphInit,points){
+  return{id,topic,text,context,type,inputDef,answer,hint,explanation,graphInit,points};
+}
+
+const DB = {
+
+/* ── 平方完成 ───────────────────────── */
+kansei:[
+  makeQ(1,'平方完成 ① 基本',
+    'y = x² + 4x + 1 を標準形 y = (x－p)² + q に変換せよ。',
+    'まず x²+4x の部分に注目。<strong>(x＋□)²</strong> の形を作るために何を加減するかを考えよう。',
+    'multi-input',
+    [{id:'p',label:'p =',placeholder:'?'},{id:'q',label:'q =',placeholder:'?'}],
+    {p:-2,q:-3},
+    `<strong>手順</strong><br>
+     x²+4x を平方完成する。<br>
+     「4の半分 = 2」に注目。<br>
+     <span class="hint-formula">x²+4x = (x+2)²－4</span><br>
+     だから y = (x+2)²－4+1 = (x+2)²－3<br>
+     <span class="hint-formula">p = −2、q = −3</span>`,
+    `<div class="fb-step">y = x²<span class="hl">+4x</span>+1<br>
+     　= x²+4x <span class="hl">+4−4</span>+1 　← 4の半分の2乗(=4)を足して引く<br>
+     　= (x+2)²−4+1<br>
+     　= <span class="hl2">(x+2)²−3</span></div>
+     頂点は <strong>(−2, −3)</strong>。y=x²を x軸方向に−2、y軸方向に−3 平行移動したグラフ。`,
+    {a:1,p:-2,q:-3,highlightVertex:true,range:6},3,100),
+
+  makeQ(2,'平方完成 ② 符号注意',
+    'y = x² − 6x + 7 を標準形に変換し、頂点の座標を答えよ。',
+    'x²−6x の平方完成。引く数に注意して慎重に計算しよう。',
+    'multi-input',
+    [{id:'p',label:'p =',placeholder:'?'},{id:'q',label:'q =',placeholder:'?'}],
+    {p:3,q:-2},
+    `<strong>手順</strong><br>
+     「−6の半分 = −3」に注目。<br>
+     <span class="hint-formula">x²−6x = (x−3)²－9</span><br>
+     y = (x−3)²−9+7 = (x−3)²−2<br>
+     <span class="hint-formula">頂点 (3, −2)</span>`,
+    `<div class="fb-step">y = x²<span class="hl">−6x</span>+7<br>
+     　= (x−3)²<span class="hl">−9</span>+7 　← (−6/2)²=9 を足して引く<br>
+     　= <span class="hl2">(x−3)²−2</span></div>
+     頂点 <strong>(3, −2)</strong>。x の符号が「−」のとき、標準形の p は「+3」→ グラフは右に3移動。`,
+    {a:1,p:3,q:-2,highlightVertex:true,range:6},3,100),
+
+  makeQ(3,'平方完成 ③ 係数あり',
+    'y = 2x² − 8x + 3 を標準形 y = a(x－p)² + q に変換せよ。',
+    '係数 a=2 がある場合は、まず x² の係数でくくり出してから平方完成する。',
+    'multi-input',
+    [{id:'p',label:'p =',placeholder:'?'},{id:'q',label:'q =',placeholder:'?'},{id:'a',label:'a =',placeholder:'?'}],
+    {p:2,q:-5,a:2},
+    `<strong>係数ありの手順</strong><br>
+     <span class="hint-formula">y = 2(x²−4x)+3</span><br>
+     x²−4x を平方完成：(x−2)²−4<br>
+     <span class="hint-formula">y = 2{(x−2)²−4}+3</span><br>
+     <span class="hint-formula">y = 2(x−2)²−8+3 = 2(x−2)²−5</span><br>
+     a=2、p=2、q=−5`,
+    `<div class="fb-step">y = <span class="hl">2</span>x²−8x+3<br>
+     　= <span class="hl">2</span>(x²−4x)+3 　← 2でくくる<br>
+     　= <span class="hl">2</span>{(x−2)²−4}+3 　← x²−4x を平方完成<br>
+     　= <span class="hl">2</span>(x−2)²<span class="hl">−8</span>+3 　← 2を中に分配<br>
+     　= <span class="hl2">2(x−2)²−5</span></div>
+     係数 a≠1 のとき、くくり出した数を最後に括弧外まで掛けるのを忘れずに！`,
+    {a:2,p:2,q:-5,highlightVertex:true,range:6},3,120),
+
+  makeQ(4,'平方完成 ④ 負の係数',
+    'y = −x² + 4x − 1 を標準形に変換せよ。',
+    '係数が負のとき、グラフは下に凸（開口が下向き）になる。平方完成の手順は同じ。',
+    'multi-input',
+    [{id:'p',label:'p =',placeholder:'?'},{id:'q',label:'q =',placeholder:'?'},{id:'a',label:'a =',placeholder:'?'}],
+    {p:2,q:3,a:-1},
+    `<strong>手順</strong><br>
+     <span class="hint-formula">y = −(x²−4x)−1</span><br>
+     x²−4x を平方完成：(x−2)²−4<br>
+     <span class="hint-formula">y = −{(x−2)²−4}−1</span><br>
+     <span class="hint-formula">y = −(x−2)²+4−1 = −(x−2)²+3</span><br>
+     a=−1、p=2、q=3`,
+    `<div class="fb-step">y = −x²+4x−1<br>
+     　= <span class="hl">−</span>(x²−4x)−1 　← −1でくくる（符号反転に注意）<br>
+     　= <span class="hl">−</span>{(x−2)²−4}−1<br>
+     　= <span class="hl">−</span>(x−2)²<span class="hl">+4</span>−1<br>
+     　= <span class="hl2">−(x−2)²+3</span></div>
+     a<0 のため<strong>上に凸</strong>。頂点(2,3)が最大値。「−」でくくると4x→−4x に符号が変わることに注意！`,
+    {a:-1,p:2,q:3,highlightVertex:true,range:6},3,130),
+
+  makeQ(5,'平方完成 ⑤ 分数',
+    'y = x² + 3x + 1 を標準形に変換せよ。（分数を含む答え）',
+    '「3の半分 = 3/2」。分数の平方完成も手順は同じ。慌てずに。',
+    'multi-input-frac',
+    [{id:'p',label:'p =',type:'frac',num:'pn',den:'pd'},{id:'q',label:'q =',type:'frac',num:'qn',den:'qd'}],
+    {pn:-3,pd:2,qn:-5,qd:4},
+    `<strong>分数の平方完成</strong><br>
+     「3 ÷ 2 = 3/2」<br>
+     <span class="hint-formula">x²+3x = (x+3/2)²−9/4</span><br>
+     y = (x+3/2)²−9/4+1 = (x+3/2)²−5/4<br>
+     <span class="hint-formula">p = −3/2、q = −5/4</span>`,
+    `<div class="fb-step">x²+3x の平方完成<br>
+     　「3の半分」= <span class="hl">3/2</span><br>
+     　(x+3/2)² = x²+3x+9/4<br>
+     　だから x²+3x = (x+3/2)²<span class="hl">−9/4</span><br><br>
+     y = (x+3/2)²−9/4+<span class="hl">4/4</span><br>
+     　= <span class="hl2">(x+3/2)²−5/4</span></div>
+     分数でも手順は全く同じ。「係数の半分を2乗して引く」これだけ。`,
+    {a:1,p:-1.5,q:-1.25,highlightVertex:true,range:5},3,150),
+
+  makeQ(6,'平方完成 ⑥ 応用：逆問題',
+    '頂点が (−1, 4) で、点 (1, 0) を通る二次関数の式を求めよ。',
+    '標準形 y = a(x+1)² + 4 に、通る点 (1,0) を代入して a を求める。',
+    'multi-input',
+    [{id:'a',label:'a =',placeholder:'?'},{id:'p',label:'頂点 x =',placeholder:'?'},{id:'q',label:'頂点 y =',placeholder:'?'}],
+    {a:-1,p:-1,q:4},
+    `<strong>逆算の手順</strong><br>
+     頂点 (−1,4) → <span class="hint-formula">y = a(x+1)²+4</span><br>
+     点 (1,0) を代入：<br>
+     <span class="hint-formula">0 = a(1+1)²+4 = 4a+4</span><br>
+     4a = −4 → <span class="hint-formula">a = −1</span>`,
+    `<div class="fb-step">頂点 (−1,4) から：y = a(x−(<span class="hl">−1</span>))²+<span class="hl">4</span> = a(x+1)²+4<br><br>
+     点 (1,0) を代入：<br>
+     0 = a(1+1)²+4<br>
+     0 = 4a+4<br>
+     <span class="hl2">a = −1</span><br><br>
+     よって y = −(x+1)²+4</div>
+     標準形を先に立てて、通る点から a を逆算する。この手順は入試頻出。`,
+    {a:-1,p:-1,q:4,highlightVertex:true,range:6},3,160),
+],
+
+/* ── 頂点を狙い撃て ──────────────────── */
+vertex:[
+  makeQ(7,'頂点の読み取り ①',
+    'y = (x − 2)² + 3 の頂点の座標を答えよ。',
+    '標準形 y = (x−p)²+q の頂点は (p, q)。符号に注意しよう。',
+    'multi-input',
+    [{id:'p',label:'x座標 =',placeholder:'?'},{id:'q',label:'y座標 =',placeholder:'?'}],
+    {p:2,q:3},
+    `<strong>標準形の頂点</strong><br>
+     y = (x<span style="color:var(--teal)">−2</span>)²<span style="color:var(--red)">+3</span><br>
+     <span class="hint-formula">p = 2、q = 3</span><br>
+     「(x−p)」なので p=+2（符号に注意）`,
+    `<div class="fb-step">y = (x<span class="hl">−2</span>)²<span class="hl2">+3</span><br>
+     標準形 y = a(x−<span class="hl">p</span>)²+<span class="hl2">q</span> の頂点は (<span class="hl">p</span>, <span class="hl2">q</span>)<br><br>
+     ∴ 頂点 = <span class="hl2">(2, 3)</span></div>
+     (x−2)² の「−2」が見えるので x=2。符号をひっくり返さないよう注意！`,
+    {a:1,p:2,q:3,highlightVertex:true,range:6},3,80),
+
+  makeQ(8,'頂点の読み取り ② 符号の罠',
+    'y = (x + 3)² − 5 の頂点の座標を答えよ。',
+    '(x+3)² は (x−(−3))² と同じ。p はいくつ？',
+    'multi-input',
+    [{id:'p',label:'x座標 =',placeholder:'?'},{id:'q',label:'y座標 =',placeholder:'?'}],
+    {p:-3,q:-5},
+    `<strong>符号の確認</strong><br>
+     (x+3)² = (x−(<span style="color:var(--red)">−3</span>))²<br>
+     <span class="hint-formula">p = −3</span>（+3 ではない！）<br>
+     q = −5<br>
+     <span class="hint-formula">頂点 (−3, −5)</span>`,
+    `<div class="fb-step">y = (x<span class="hl">+3</span>)²−5 = (x−(<span class="hl">−3</span>))²−5<br><br>
+     標準形に合わせると：p = <span class="hl">−3</span>、q = −5<br>
+     ∴ 頂点 = <span class="hl2">(−3, −5)</span></div>
+     「(x+3)²」を見て「x=+3」と答えるのが最も多いミス。<br>
+     (x+3)=0 → x=−3 が頂点のx座標。`,
+    {a:1,p:-3,q:-5,highlightVertex:true,range:7},3,100),
+
+  makeQ(9,'一般形から頂点へ',
+    'y = x² − 4x + 7 の頂点を求めよ。（平方完成を使うこと）',
+    '直接読めないので平方完成が必要。手順を守ろう。',
+    'multi-input',
+    [{id:'p',label:'x座標 =',placeholder:'?'},{id:'q',label:'y座標 =',placeholder:'?'}],
+    {p:2,q:3},
+    `<strong>平方完成して頂点を求める</strong><br>
+     x²−4x の平方完成：(x−2)²−4<br>
+     <span class="hint-formula">y = (x−2)²−4+7 = (x−2)²+3</span><br>
+     <span class="hint-formula">頂点 (2, 3)</span>`,
+    `<div class="fb-step">y = x²<span class="hl">−4x</span>+7<br>
+     　= (x−2)²<span class="hl">−4</span>+7<br>
+     　= <span class="hl2">(x−2)²+3</span><br>
+     ∴ 頂点 <span class="hl2">(2, 3)</span></div>
+     一般形の頂点は<strong>必ず平方完成</strong>してから読む。公式丸暗記でなく「変形の流れ」を理解していれば確実。`,
+    {a:1,p:2,q:3,highlightVertex:true,range:6},3,120),
+
+  makeQ(10,'グラフから式へ',
+    '右のグラフから、二次関数の式として正しいものを選べ。グラフの頂点は (1, −2) で、y軸との交点は (0, −1) である。',
+    '頂点から標準形を立てて、y軸との交点で a を確かめる。',
+    'choice',
+    ['y = (x−1)²−2','y = (x+1)²−2','y = 2(x−1)²−2','y = (x−1)²+2'],
+    'y = (x−1)²−2',
+    `<strong>グラフから式を作る</strong><br>
+     頂点(1,−2) → <span class="hint-formula">y = a(x−1)²−2</span><br>
+     点(0,−1)を代入：<br>
+     −1 = a(0−1)²−2 = a−2<br>
+     <span class="hint-formula">a = 1</span><br>
+     → y = (x−1)²−2`,
+    `<div class="fb-step">頂点 (1,−2) → y = a(x−1)²−2<br>
+     点 (0,−1) 代入：<br>
+     　−1 = a(−1)²−2<br>
+     　−1 = a−2<br>
+     　<span class="hl2">a = 1</span><br>
+     ∴ y = <span class="hl2">(x−1)²−2</span></div>
+     まず頂点で標準形を立て、別の1点で a を決定する。これがグラフ→式の黄金パターン。`,
+    {a:1,p:1,q:-2,highlightVertex:true,range:5},3,130),
+
+  makeQ(11,'最大値・最小値',
+    'y = 2(x − 3)² − 4 について、この関数の最小値とそのときの x の値を答えよ。',
+    'a > 0 なら下に凸で頂点が最小値。',
+    'multi-input',
+    [{id:'p',label:'x =',placeholder:'?'},{id:'q',label:'最小値 =',placeholder:'?'}],
+    {p:3,q:-4},
+    `<strong>最小値の求め方</strong><br>
+     a = 2 > 0 なので<strong>下に凸</strong><br>
+     頂点 (3, −4) が最小点<br>
+     <span class="hint-formula">x=3 のとき最小値 −4</span>`,
+    `<div class="fb-step">y = 2(x−3)²−4<br>
+     a = 2 > 0 → 下に凸（上方向に開く）<br>
+     (x−3)² ≥ 0 なので 2(x−3)² ≥ 0<br>
+     最小は 2(x−3)² = 0 のとき<br>
+     → <span class="hl">x = 3</span> のとき y = <span class="hl2">−4（最小値）</span></div>
+     標準形なら「a の符号→凸方向→頂点が最大か最小か」が一目でわかる。これが標準形の強み。`,
+    {a:2,p:3,q:-4,highlightVertex:true,range:7},3,120),
+
+  makeQ(12,'軸の方程式',
+    'y = −3(x + 2)² + 5 の対称軸の方程式を答えよ。',
+    '放物線の対称軸は頂点を通る垂直線。標準形なら即読みできる。',
+    'multi-input',
+    [{id:'p',label:'x =',placeholder:'対称軸'}],
+    {p:-2},
+    `<strong>対称軸 = 頂点の x 座標</strong><br>
+     y = −3(x<span style="color:var(--red)">+2</span>)²+5<br>
+     頂点の x座標 = <span class="hint-formula">x = −2</span><br>
+     対称軸：x = −2`,
+    `<div class="fb-step">y = −3(x<span class="hl">+2</span>)²+5 = −3(x−(<span class="hl">−2</span>))²+5<br>
+     頂点 (−2, 5)<br>
+     対称軸 = <span class="hl2">x = −2</span></div>
+     対称軸の方程式は「x = p」（p は頂点の x 座標）。<br>
+     標準形を見れば平方完成せずに即答できる。`,
+    {a:-3,p:-2,q:5,highlightVertex:true,range:6},3,100),
+],
+
+/* ── 平行移動 ──────────────────────── */
+heikou:[
+  makeQ(13,'平行移動 ① x軸方向',
+    'y = x² を x 軸方向に +3 だけ平行移動した放物線の式を答えよ。',
+    'x軸方向に +p 移動すると、式の中の x が「x−p」になる。なぜ符号が逆になるか考えよう。',
+    'multi-input',
+    [{id:'p',label:'移動後の式：y = (x－',placeholder:'?'},{id:'p2',label:')²　　p =',placeholder:'?'}],
+    {p:3,p2:3},
+    `<strong>なぜ x−3 になるか？</strong><br>
+     頂点が (0,0) → (3,0) に移動<br>
+     標準形 y = (x−3)²+0<br>
+     <span class="hint-formula">y = (x−3)²</span><br>
+     「右に3移動」→ (x−3)² と<strong>マイナス</strong>になる`,
+    `<div class="fb-step">元の式：y = x²（頂点 (0,0)）<br>
+     x軸方向に +3 → 頂点が (0,0)→(<span class="hl">3</span>,0)<br><br>
+     標準形に当てはめ：y = (x−<span class="hl">3</span>)²<br><br>
+     【なぜ −3 か】<br>
+     x=3 のとき (3−3)²=0 → その点が最小<br>
+     「x=3を0にする」操作 → x−3</div>
+     x軸方向に +p 移動 → 式は (x−p)。<strong>移動方向と逆符号</strong>になる理由を理解しよう。`,
+    {a:1,p:3,q:0,showTarget:true,targetA:1,targetP:0,targetQ:0,highlightVertex:true,range:6},3,100),
+
+  makeQ(14,'平行移動 ② y軸方向',
+    'y = x² を y 軸方向に −2 だけ平行移動した式を答えよ。',
+    'y軸方向の移動は直感通り。+q すれば上に、−q すれば下に。',
+    'choice',
+    ['y = x²−2','y = (x−2)²','y = x²+2','y = (x+2)²'],
+    'y = x²−2',
+    `y軸方向に −2 移動<br>
+     <span class="hint-formula">y = x²+(−2) = x²−2</span><br>
+     y軸方向の移動は<strong>符号がそのまま</strong>。`,
+    `<div class="fb-step">元の式：y = x²（頂点 (0,0)）<br>
+     y軸方向に −2 → 頂点が (0,0)→(0,<span class="hl">−2</span>)<br>
+     標準形：y = x²<span class="hl2">−2</span></div>
+     y軸方向の移動は式にそのまま足し引きするだけ。<br>
+     x軸方向は「逆符号」だが、y軸方向は「そのまま」という違いに注目！`,
+    {a:1,p:0,q:-2,showTarget:true,targetA:1,targetP:0,targetQ:0,highlightVertex:true,range:5},3,90),
+
+  makeQ(15,'平行移動 ③ 両方向',
+    'y = 2x² を x 軸方向に −1、y 軸方向に +4 だけ平行移動した式を答えよ。',
+    '両方向同時に移動。a の値は変わらない点にも注意。',
+    'multi-input',
+    [{id:'p',label:'x軸方向の移動 p =',placeholder:'?'},{id:'q',label:'y軸方向の移動 q =',placeholder:'?'}],
+    {p:-1,q:4},
+    `<strong>両方向の平行移動</strong><br>
+     x軸 −1 → (x−(<span style="color:var(--red)">−1</span>))² = (x+1)²<br>
+     y軸 +4 → +4<br>
+     <span class="hint-formula">y = 2(x+1)²+4</span><br>
+     a=2 は変化しない`,
+    `<div class="fb-step">元の式：y = 2x²（頂点 (0,0)）<br>
+     x軸方向 −1 → (0,0)→(<span class="hl">−1</span>,0)<br>
+     y軸方向 +4 → (<span class="hl">−1</span>,0)→(<span class="hl">−1</span>,<span class="hl2">4</span>)<br><br>
+     移動後：y = 2(x−(<span class="hl">−1</span>))²+<span class="hl2">4</span><br>
+     　　　= <span class="hl2">2(x+1)²+4</span></div>
+     x軸方向 −1 は (x+1) → マイナスの移動は + になる（逆符号！）`,
+    {a:2,p:-1,q:4,showTarget:true,targetA:2,targetP:0,targetQ:0,highlightVertex:true,range:6},3,120),
+
+  makeQ(16,'逆問題：移動量を求める',
+    'y = (x−1)² − 3 は、y = x² をどの方向にどれだけ平行移動したものか？',
+    '標準形の p と q が答えに直結している。',
+    'multi-input',
+    [{id:'p',label:'x軸方向 =',placeholder:'?'},{id:'q',label:'y軸方向 =',placeholder:'?'}],
+    {p:1,q:-3},
+    `<strong>逆算の読み方</strong><br>
+     y = (x<span style="color:var(--red)">−1</span>)²<span style="color:var(--blue)">−3</span><br>
+     頂点 (1, −3)<br>
+     元の頂点 (0,0) から (1,−3) へ移動<br>
+     <span class="hint-formula">x軸 +1、y軸 −3</span>`,
+    `<div class="fb-step">y = x² の頂点：(0, 0)<br>
+     y = (x−1)²−3 の頂点：(<span class="hl">1</span>, <span class="hl">−3</span>)<br><br>
+     頂点の移動量 = 移動量<br>
+     x軸方向：0→1 = <span class="hl2">+1</span><br>
+     y軸方向：0→−3 = <span class="hl2">−3</span></div>
+     標準形の頂点 (p, q) が、そのまま「元の頂点 (0,0) からの移動量」を表している。`,
+    {a:1,p:1,q:-3,showTarget:true,targetA:1,targetP:0,targetQ:0,highlightVertex:true,range:5},3,120),
+
+  makeQ(17,'連続移動',
+    'y = x² を x 軸方向に +2 平行移動した後、さらに y 軸方向に −5 平行移動した。最終的な式と頂点を答えよ。',
+    '2段階の移動も、最終的な標準形で表せば一発で確認できる。',
+    'multi-input',
+    [{id:'p',label:'頂点 x =',placeholder:'?'},{id:'q',label:'頂点 y =',placeholder:'?'}],
+    {p:2,q:-5},
+    `<strong>2段階移動</strong><br>
+     1段目：y = x² → y = (x−2)²（x軸 +2）<br>
+     2段目：y = (x−2)² → y = (x−2)²−5（y軸 −5）<br>
+     <span class="hint-formula">頂点 (2, −5)</span>`,
+    `<div class="fb-step">y = x²<br>
+     ↓ x軸 +2移動<br>
+     y = (x−<span class="hl">2</span>)²<br>
+     ↓ y軸 −5移動<br>
+     y = (x−<span class="hl">2</span>)²<span class="hl2">−5</span><br><br>
+     頂点：(<span class="hl">2</span>, <span class="hl2">−5</span>)</div>
+     移動の順序を変えても最終結果は同じ。x軸方向の移動は式の「中」、y軸方向は「外」に現れる。`,
+    {a:1,p:2,q:-5,showTarget:true,targetA:1,targetP:0,targetQ:0,highlightVertex:true,range:7},3,130),
+
+  makeQ(18,'平行移動の合成式',
+    'y = 3(x+1)² − 2 は、y = 3x² + 6x + 1 と同じグラフか？答え（同じ・違う）と理由を選択せよ。',
+    '右辺を平方完成して標準形に変換してから比較しよう。',
+    'choice',
+    ['同じ（標準形が一致する）','違う（頂点が異なる）','違う（a の値が異なる）','同じ（展開すると一致する）'],
+    '同じ（標準形が一致する）',
+    `<strong>比較の手順</strong><br>
+     y = 3x²+6x+1 を平方完成：<br>
+     = 3(x²+2x)+1 = 3{(x+1)²−1}+1<br>
+     <span class="hint-formula">= 3(x+1)²−3+1 = 3(x+1)²−2</span><br>
+     一致！`,
+    `<div class="fb-step">y = 3x²+6x+1<br>
+     　= 3(x²+2x)+1<br>
+     　= 3{(x+1)²−1}+1<br>
+     　= 3(x+1)²−3+1<br>
+     　= <span class="hl2">3(x+1)²−2 ✓ 一致</span></div>
+     一般形と標準形は同じ関数の「別の書き方」。平方完成で変換すれば同一かどうかを確認できる。`,
+    {a:3,p:-1,q:-2,highlightVertex:true,range:5},3,140),
+],
+
+/* ── 総合チャレンジ ─────────────────── */
+all:[], // 後で構築
+};
+
+/* 総合は全カテゴリから均等に10問 */
+(function buildAll(){
+  const pool = [];
+  ['kansei','vertex','heikou'].forEach(k=>DB[k].forEach(q=>pool.push(q)));
+  // シャッフルして10問
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  DB.all=pool.slice(0,10);
+})();
+
+/* ════════════════════════════════
+   ゲームエンジン
+════════════════════════════════ */
+let state={mode:'',questions:[],current:0,score:0,correct:0,answered:false,hintUsed:false};
+
+const modeNames={kansei:'Stage 1: 平方完成',vertex:'Stage 2: 頂点を狙い撃て',heikou:'Stage 3: 平行移動',all:'FINAL: 総合チャレンジ'};
+
+function startMode(m){
+  state={mode:m,questions:[...DB[m]],current:0,score:0,correct:0,answered:false,hintUsed:false};
+  document.getElementById('title-screen').style.cssText='animation:fadeIn .3s ease reverse;pointer-events:none';
+  setTimeout(()=>{
+    document.getElementById('title-screen').style.display='none';
+    document.getElementById('game-screen').style.display='block';
+    document.getElementById('mode-tag-label').textContent=modeNames[m];
+    updateBar();renderQ();
+  },300);
+}
+
+function updateBar(){
+  const {current,questions,score,correct}=state;
+  document.getElementById('q-counter').textContent=`${current+1} / ${questions.length}`;
+  document.getElementById('score-disp').textContent=score;
+  document.getElementById('correct-counter').textContent=correct;
+  document.getElementById('prog-fill').style.width=(current/questions.length*100)+'%';
+}
+
+function renderQ(){
+  state.answered=false;state.hintUsed=false;
+  const q=state.questions[state.current];
+  const left=document.getElementById('q-left-pane');
+  const right=document.getElementById('q-right-pane');
+
+  /* 左ペイン */
+  let leftHTML=`
+    <div class="q-number-chip">
+      <div class="q-num-dot"></div>
+      問題 ${state.current+1} / ${state.questions.length}
+    </div>
+    <div class="q-topic">${q.topic}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-context">${q.context}</div>
+  `;
+
+  /* 入力UI */
+  switch(q.type){
+    case 'multi-input': leftHTML+=buildMultiInput(q.inputDef); break;
+    case 'multi-input-frac': leftHTML+=buildFracInput(q.inputDef); break;
+    case 'choice': leftHTML+=buildChoices(q.inputDef); break;
+  }
+
+  leftHTML+=`
+    <div style="margin-top:1rem">
+      <button class="hint-btn" id="hint-btn" onclick="toggleHint()">💡 ヒントを見る（−40pt）</button>
+      <div class="hint-panel" id="hint-panel">${q.hint}</div>
+    </div>
+    <div class="feedback-panel" id="feedback-panel"></div>
+  `;
+  left.innerHTML=leftHTML;
+  left.style.animation='slideRight .4s ease';
+
+  /* 右ペイン（グラフ） */
+  const g=q.graphInit;
+  right.innerHTML=`
+    <div class="graph-card">
+      <div class="graph-header">
+        <span class="graph-title">グラフビュー</span>
+        <span class="graph-eq" id="graph-eq">y = f(x)</span>
+      </div>
+      <div class="graph-canvas-wrap">
+        <canvas id="mainCanvas" width="380" height="320"></canvas>
+      </div>
+      <div class="graph-info">
+        <div class="gi-item"><div class="gi-label">a (開口)</div><div class="gi-val" id="gi-a">${g.a}</div></div>
+        <div class="gi-item"><div class="gi-label">頂点 x</div><div class="gi-val" id="gi-p">?</div></div>
+        <div class="gi-item"><div class="gi-label">頂点 y</div><div class="gi-val" id="gi-q">?</div></div>
+      </div>
+    </div>
+  `;
+  right.style.animation='scaleIn .4s ease';
+
+  // グラフ描画
+  setTimeout(()=>{
+    const canvas=document.getElementById('mainCanvas');
+    if(canvas){
+      drawGraph(canvas,{...g, highlightVertex: false});
+    }
+  },50);
+
+  // リアルタイム更新（スライダーや入力に応じて）
+  setupLiveUpdate(q);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateGraphEq(a,p,q){
+  const el=document.getElementById('graph-eq');
+  if(!el)return;
+  let s='y = ';
+  if(a!==1&&a!==-1)s+=a;
+  if(a===-1)s+='-';
+  s+='(x';
+  if(p>0)s+=`−${p}`;
+  else if(p<0)s+=`+${Math.abs(p)}`;
+  s+=')²';
+  if(q>0)s+=`+${q}`;
+  else if(q<0)s+=`−${Math.abs(q)}`;
+  el.textContent=s;
+}
+
+function setupLiveUpdate(q){
+  // 数値入力フィールドにイベントリスナーを追加してグラフをリアルタイム更新
+  setTimeout(()=>{
+    document.querySelectorAll('.num-input').forEach(inp=>{
+      inp.addEventListener('input',()=>{
+        // 現在の入力値でグラフを仮更新
+        tryLiveGraph(q);
+      });
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer(q);});
+    });
+  },100);
+}
+
+function tryLiveGraph(q){
+  const g=q.graphInit;
+  const canvas=document.getElementById('mainCanvas');
+  if(!canvas)return;
+
+  // 入力フィールドの現在値を取得
+  let a=parseFloat(document.getElementById('inp-a')?.value)||g.a;
+  let p=parseFloat(document.getElementById('inp-p')?.value);
+  let qq=parseFloat(document.getElementById('inp-q')?.value);
+
+  if(isNaN(p))p=g.p;
+  if(isNaN(qq))qq=g.q;
+
+  // ゆるい範囲チェックのみ
+  if(Math.abs(a)>10||Math.abs(p)>10||Math.abs(qq)>10)return;
+
+  drawGraph(canvas,{...g,a,p,q:qq});
+  updateGraphEq(a,p,qq);
+  document.getElementById('gi-a').textContent=a;
+  document.getElementById('gi-p').textContent=p;
+  document.getElementById('gi-q').textContent=qq;
+}
+
+/* ─────────────────────────────
+   入力UI構築
+───────────────────────────── */
+function buildMultiInput(defs){
+  let html='<div class="input-section">';
+  defs.forEach(d=>{
+    html+=`<div class="input-row">
+      <span class="input-label">${d.label}</span>
+      <input type="number" class="num-input" id="inp-${d.id}" placeholder="${d.placeholder||'?'}" step="any">
+    </div>`;
+  });
+  html+=`<button class="submit-btn" id="submit-btn" onclick="checkAnswer()">判定する →</button>`;
+  html+='</div>';
+  return html;
+}
+
+function buildFracInput(defs){
+  let html='<div class="input-section">';
+  defs.forEach(d=>{
+    html+=`<div class="input-row" style="align-items:center;gap:.5rem">
+      <span class="input-label">${d.label}</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <input type="number" class="num-input" id="inp-${d.num}" placeholder="分子" style="width:70px" step="1">
+        <div style="width:60px;height:2px;background:var(--ink2);border-radius:2px"></div>
+        <input type="number" class="num-input" id="inp-${d.den}" placeholder="分母" style="width:70px" step="1">
+      </div>
+    </div>`;
+  });
+  html+=`<p style="font-size:.75rem;color:var(--ink3);margin:.5rem 0">※ 分数で入力してください（例：p=−3/2 → 分子:−3 分母:2）</p>`;
+  html+=`<button class="submit-btn" id="submit-btn" onclick="checkAnswer()">判定する →</button>`;
+  html+='</div>';
+  return html;
+}
+
+function buildChoices(opts){
+  let html='<div class="choices-wrap">';
+  opts.forEach(o=>{
+    html+=`<button class="choice-card" onclick="checkChoice(this,'${o.replace(/'/g,"\\'")}')">
+      ${o}
+    </button>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+/* ─────────────────────────────
+   ヒント
+───────────────────────────── */
+function toggleHint(){
+  const panel=document.getElementById('hint-panel');
+  const btn=document.getElementById('hint-btn');
+  const open=panel.classList.contains('open');
+  if(!open){
+    panel.classList.add('open');
+    btn.textContent='💡 ヒントを隠す';
+    state.hintUsed=true;
+  }else{
+    panel.classList.remove('open');
+    btn.textContent='💡 ヒントを見る（−40pt）';
+  }
+}
+
+/* ─────────────────────────────
+   答え判定
+───────────────────────────── */
+function checkAnswer(){
+  if(state.answered)return;
+  const q=state.questions[state.current];
+
+  let correct=false;
+
+  if(q.type==='multi-input'){
+    const ans=q.answer;
+    let allOk=true;
+    const keys=Object.keys(ans);
+    keys.forEach(k=>{
+      const inp=document.getElementById('inp-'+k);
+      if(!inp){allOk=false;return;}
+      const v=parseFloat(inp.value);
+      if(isNaN(v)||Math.abs(v-ans[k])>0.01){
+        allOk=false;
+        inp.classList.add('ng');
+        inp.style.animation='shake .3s ease';
+        setTimeout(()=>inp.style.animation='',400);
+      }else{
+        inp.classList.add('ok');
+      }
+    });
+    correct=allOk;
+
+  }else if(q.type==='multi-input-frac'){
+    const ans=q.answer;
+    // p: pn/pd, q: qn/qd
+    const pn=parseFloat(document.getElementById('inp-pn')?.value);
+    const pd=parseFloat(document.getElementById('inp-pd')?.value);
+    const qn=parseFloat(document.getElementById('inp-qn')?.value);
+    const qd=parseFloat(document.getElementById('inp-qd')?.value);
+    const pOk=!isNaN(pn)&&!isNaN(pd)&&pd!==0&&Math.abs(pn/pd-ans.pn/ans.pd)<0.01;
+    const qOk=!isNaN(qn)&&!isNaN(qd)&&qd!==0&&Math.abs(qn/qd-ans.qn/ans.qd)<0.01;
+    correct=pOk&&qOk;
+    if(!pOk){['inp-pn','inp-pd'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('ng');el.style.animation='shake .3s ease';}});}
+    if(!qOk){['inp-qn','inp-qd'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('ng');el.style.animation='shake .3s ease';}});}
+    if(pOk){['inp-pn','inp-pd'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('ok');});}
+    if(qOk){['inp-qn','inp-qd'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('ok');});}
+  }
+
+  processResult(correct,q);
+}
+
+function checkChoice(btn,chosen){
+  if(state.answered)return;
+  document.querySelectorAll('.choice-card').forEach(b=>b.style.pointerEvents='none');
+  const q=state.questions[state.current];
+  const correct=chosen===q.answer;
+  btn.classList.add(correct?'correct':'incorrect');
+  if(!correct){
+    document.querySelectorAll('.choice-card').forEach(b=>{
+      if(b.textContent.trim()===q.answer)b.classList.add('correct');
+    });
+  }
+  processResult(correct,q);
+}
+
+function processResult(correct,q){
+  state.answered=true;
+  let pts=q.points;
+  if(state.hintUsed)pts=Math.max(0,pts-40);
+  if(correct){state.score+=pts;state.correct++;}
+
+  // グラフを正解で更新
+  const g=q.graphInit;
+  const canvas=document.getElementById('mainCanvas');
+  if(canvas){
+    drawGraph(canvas,{...g,highlightVertex:true});
+    updateGraphEq(g.a,g.p,g.q);
+    document.getElementById('gi-a').textContent=g.a;
+    document.getElementById('gi-p').textContent=g.p;
+    document.getElementById('gi-q').textContent=g.q;
+  }
+
+  // フィードバック
+  const fb=document.getElementById('feedback-panel');
+  const isLast=state.current>=state.questions.length-1;
+
+  if(correct){
+    fb.className='feedback-panel show ok';
+    fb.innerHTML=`
+      <div class="fb-title ok">✅ 正解！ +${pts}pt${state.hintUsed?' <span style="font-size:.8em;opacity:.7">(ヒント使用 −40pt)</span>':''}</div>
+      <div class="fb-body">${q.explanation}
+        <br><button class="next-btn" onclick="${isLast?'showResult()':'nextQ()'}">
+          ${isLast?'🏁 結果を見る':'次の問題へ →'}
+        </button>
+      </div>
+    `;
+    spawnStars();
+  }else{
+    fb.className='feedback-panel show ng';
+    fb.innerHTML=`
+      <div class="fb-title ng">❌ 不正解 — 解説を確認しよう</div>
+      <div class="fb-body">${q.explanation}
+        <br><button class="next-btn" onclick="${isLast?'showResult()':'nextQ()'}">
+          ${isLast?'🏁 結果を見る':'次の問題へ →'}
+        </button>
+      </div>
+    `;
+  }
+
+  const sub=document.getElementById('submit-btn');
+  if(sub)sub.disabled=true;
+  updateBar();
+  setTimeout(()=>fb.scrollIntoView({behavior:'smooth',block:'nearest'}),200);
+}
+
+function nextQ(){
+  state.current++;
+  updateBar();
+  renderQ();
+}
+
+/* ─────────────────────────────
+   パーティクル
+───────────────────────────── */
+function spawnStars(){
+  const emojis=['✨','⭐','🌟','🎉','💫','🎊'];
+  for(let i=0;i<10;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='p-star';
+      el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+      el.style.cssText=`left:${10+Math.random()*80}vw;top:${20+Math.random()*50}vh;animation-delay:${Math.random()*.4}s`;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),2200);
+    },i*60);
+  }
+}
+
+/* ════════════════════════════════
+   結果画面
+════════════════════════════════ */
+function showResult(){
+  document.getElementById('game-screen').style.display='none';
+  const rs=document.getElementById('result-screen');
+  rs.style.display='flex';
+
+  const {score,correct,questions}=state;
+  const total=questions.length;
+  const maxScore=questions.reduce((s,q)=>s+q.points,0);
+  const pct=Math.round(correct/total*100);
+
+  let icon,grade,title,msg;
+  if(pct>=90){icon='🏆';grade='S RANK';title='完全攻略';msg='二次関数の全分野を完璧に理解している。平方完成・頂点・平行移動の論理がしっかり身についた証拠。';}
+  else if(pct>=70){icon='🥇';grade='A RANK';title='理解度 高';msg='基本的な理解はできている。間違えた問題の解説をもう一度読んで、満点を狙おう。';}
+  else if(pct>=50){icon='🥈';grade='B RANK';title='もう少し';msg='一部の概念が不明確。特に「符号の向き」（平行移動の方向と式の符号が逆になる理由）を重点的に復習しよう。';}
+  else{icon='📖';grade='C RANK';title='基礎から確認';msg='平方完成の手順からもう一度。「係数の半分を2乗して足して引く」という操作の意味を理解することが先決。';}
+
+  document.getElementById('result-wrap').innerHTML=`
+    <div class="result-icon">${icon}</div>
+    <div class="result-grade">${grade}</div>
+    <div class="result-title">${title}</div>
+    <div class="result-stats">
+      <div class="rs-item">
+        <div class="rs-label">スコア</div>
+        <div class="rs-val" style="color:var(--red)">${score}</div>
+      </div>
+      <div class="rs-item">
+        <div class="rs-label">正解数</div>
+        <div class="rs-val" style="color:var(--green)">${correct}/${total}</div>
+      </div>
+      <div class="rs-item">
+        <div class="rs-label">正答率</div>
+        <div class="rs-val">${pct}%</div>
+      </div>
+    </div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-actions">
+      <button class="rbtn-primary" onclick="retryCurrent()">もう一度挑戦</button>
+      <button class="rbtn-secondary" onclick="goHome()">ステージ選択へ</button>
+    </div>
+  `;
+
+  for(let i=0;i<5;i++)setTimeout(spawnStars,i*300);
+}
+
+function retryCurrent(){
+  document.getElementById('result-screen').style.display='none';
+  startMode(state.mode);
+}
+function goHome(){
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('result-screen').style.display='none';
+  const t=document.getElementById('title-screen');
+  t.style.display='flex';t.style.animation='fadeIn .4s ease';
+}
+</script>
+</body>
+</html>
